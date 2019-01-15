@@ -15,27 +15,28 @@
 <body>
 <!--<svg></svg>-->
 <div class="container">
-    <div class="conversation_templates conversation_template__js">
-        <div class="media">
-            <div class="img-wrapper">
-                <img class="mr-3" src="image.jpg" alt="Generic placeholder image">
+    <div class="canvas">
+        <div class="conversation_templates conversation_template__js">
+            <div class="media">
+                <div class="img-wrapper">
+                    <img class="mr-3" src="image.jpg" alt="Generic placeholder image">
+                </div>
+                <div class="media-body">
+                    <h5 class="mt-0 start-text"><span>Start</span></h5>
+                    Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque ante sollicitudin. Cras purus odio, vestibulum in vulputate at, tempus viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec lacinia congue felis in faucibus.
+                </div>
             </div>
-            <div class="media-body">
-                <h5 class="mt-0 start-text"><span>Start</span></h5>
-                Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque ante sollicitudin. Cras purus odio, vestibulum in vulputate at, tempus viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec lacinia congue felis in faucibus.
-            </div>
-        </div>
-        <div class="response-list responses_list__js">
+            <div class="response-list responses_list__js">
 
-        </div>
-        <div class="add-response row">
-            <div class="col-sm-12">
-                <button class="editor-normal-btn add-response-btn"><i class="fa fa-plus"></i> Add Response</button>
+            </div>
+            <div class="add-response row">
+                <div class="col-sm-12">
+                    <button class="editor-normal-btn add-response-btn"><i class="fa fa-plus"></i> Add Response</button>
+                </div>
             </div>
         </div>
     </div>
-
-    <div class="conversation_templates response_template__js">
+    <div class="conversation_templates response_template__js hidden">
         <div class="row form-group">
             <div class="col-sm-12 response-text">
                <textarea cols="5" placeholder="Enter response text here...">
@@ -56,7 +57,7 @@
 
     $('.add-response-btn').on('click', function (e) {
         e.preventDefault();
-        $cloneResponse.clone().appendTo($listContainer);
+        $cloneResponse.clone().removeClass('hidden').appendTo($listContainer);
     });
 
     $('.conversation_template__js').on('click', '.trash-response-btn', function (e) {
