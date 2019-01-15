@@ -43,11 +43,22 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .container .canvas {
+    height: 100%;
+    width: 100%;
+    position: relative;
+    overflow: auto;
+
     .conversation_templates {
         position: relative;
         width: 100%;
         max-width: 400px;
         margin: 0 auto;
+    }
+
+    .conversation_templates.conversation_start {
+        position: absolute;
+        top: 35%;
+        left: 35%;
     }
 
     .conversation_templates.response_template__js {

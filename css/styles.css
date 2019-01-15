@@ -38,17 +38,51 @@ h1, h2, h3, h4, h5, h6 {
 .hidden {
   display: none !important; }
 
-.container .conversation_templates {
-  position: relative;
+.container .canvas {
+  height: 100%;
   width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
+  position: relative;
+  overflow: auto;
   /**
      shared
      */ }
-  .container .conversation_templates .form-group {
+  .container .canvas .conversation_templates {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto; }
+  .container .canvas .conversation_templates.conversation_start {
+    position: absolute;
+    top: 35%;
+    left: 35%; }
+  .container .canvas .conversation_templates.response_template__js {
+    position: relative;
+    background: #eee;
+    -webkit-box-shadow: 0 3px 9px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 3px 9px 2px rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    margin: 10px 0 0; }
+    .container .canvas .conversation_templates.response_template__js .response-footer {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+      justify-content: space-between; }
+    .container .canvas .conversation_templates.response_template__js .response-text textarea {
+      min-height: 80px;
+      width: 100%;
+      border: 2px solid black; }
+    .container .canvas .conversation_templates.response_template__js .connector {
+      position: absolute;
+      right: -30px;
+      top: 50%;
+      height: 20px;
+      width: 20px;
+      border: 2px solid #000; }
+  .container .canvas .form-group {
     margin-bottom: 15px; }
-  .container .conversation_templates .media .img-wrapper {
+  .container .canvas .media .img-wrapper {
     width: 80px;
     height: 80px;
     min-width: 80px;
@@ -65,21 +99,21 @@ h1, h2, h3, h4, h5, h6 {
     -ms-flex-pack: center;
     justify-content: center;
     overflow: hidden; }
-  .container .conversation_templates .img-wrapper img {
+  .container .canvas .img-wrapper img {
     width: 80%;
     height: 80%; }
-  .container .conversation_templates .media-body {
+  .container .canvas .media-body {
     padding-top: 25px; }
-  .container .conversation_templates .start-text {
+  .container .canvas .start-text {
     position: absolute;
     top: 2px;
     right: 0; }
-    .container .conversation_templates .start-text span {
+    .container .canvas .start-text span {
       margin-right: 0;
       background: blue;
       color: #fff;
       padding: 3px 20px; }
-  .container .conversation_templates .media {
+  .container .canvas .media {
     position: relative;
     display: -webkit-box;
     display: -ms-flexbox;
@@ -93,38 +127,13 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0 15px 15px;
     -webkit-box-shadow: 0 3px 9px 2px rgba(0, 0, 0, 0.3);
     box-shadow: 0 3px 9px 2px rgba(0, 0, 0, 0.3); }
-  .container .conversation_templates.response_template__js {
-    position: relative;
-    background: #eee;
-    -webkit-box-shadow: 0 3px 9px 2px rgba(0, 0, 0, 0.3);
-    box-shadow: 0 3px 9px 2px rgba(0, 0, 0, 0.3);
-    padding: 15px;
-    margin: 10px 0 0; }
-    .container .conversation_templates.response_template__js .response-footer {
-      display: -webkit-box;
-      display: -ms-flexbox;
-      display: flex;
-      -webkit-box-pack: justify;
-      -ms-flex-pack: justify;
-      justify-content: space-between; }
-    .container .conversation_templates.response_template__js .response-text textarea {
-      min-height: 80px;
-      width: 100%;
-      border: 2px solid black; }
-    .container .conversation_templates.response_template__js .connector {
-      position: absolute;
-      right: -30px;
-      top: 50%;
-      height: 20px;
-      width: 20px;
-      border: 2px solid #000; }
-  .container .conversation_templates .add-response {
+  .container .canvas .add-response {
     margin-top: 15px;
     background: #eee;
     padding: 10px;
     -webkit-box-shadow: 0 3px 9px 2px rgba(0, 0, 0, 0.3);
     box-shadow: 0 3px 9px 2px rgba(0, 0, 0, 0.3); }
-  .container .conversation_templates button.editor-normal-btn {
+  .container .canvas button.editor-normal-btn {
     border: 1px solid black;
     padding: 5px 10px;
     font-size: 15px;
@@ -132,10 +141,10 @@ h1, h2, h3, h4, h5, h6 {
     -webkit-transition: 0.3s all ease-in-out;
     -o-transition: 0.3s all ease-in-out;
     transition: 0.3s all ease-in-out; }
-  .container .conversation_templates button.button-no-frame {
+  .container .canvas button.button-no-frame {
     background: none;
     border: none;
     cursor: pointer;
     font-size: 18px; }
-  .container .conversation_templates .add-response > div {
+  .container .canvas .add-response > div {
     text-align: right; }
