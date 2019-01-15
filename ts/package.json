@@ -1,0 +1,23 @@
+{
+  "name": "scenario_conversations_demo",
+  "version": "1.0.0",
+  "description": "Scenario conversation editor",
+  "main": "editor.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/jquery": "^3.2.15",
+    "@types/uuid": "^3.4.3",
+    "@types/velocity-animate": "^1.2.31",
+    "jquery": "^3.2.1",
+    "ts-loader": "^4.5.0",
+    "typescript": "^2.9.2"
+  },
+  "devDependencies": {
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.1"
+  }
+}
