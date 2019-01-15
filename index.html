@@ -1,0 +1,68 @@
+<html>
+
+<head>
+    <title>Scenario Experimentation</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css?family=Playfair+Display" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <script src="https://unpkg.com/d3@5.6.0/dist/d3.min.js"></script>
+    <script
+            src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+</head>
+
+<body>
+<!--<svg></svg>-->
+<div class="container">
+    <div class="conversation_templates conversation_template__js">
+        <div class="media">
+            <div class="img-wrapper">
+                <img class="mr-3" src="image.jpg" alt="Generic placeholder image">
+            </div>
+            <div class="media-body">
+                <h5 class="mt-0 start-text"><span>Start</span></h5>
+                Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque ante sollicitudin. Cras purus odio, vestibulum in vulputate at, tempus viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec lacinia congue felis in faucibus.
+            </div>
+        </div>
+        <div class="response-list responses_list__js">
+
+        </div>
+        <div class="add-response row">
+            <div class="col-sm-12">
+                <button class="editor-normal-btn add-response-btn"><i class="fa fa-plus"></i> Add Response</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="conversation_templates response_template__js">
+        <div class="row form-group">
+            <div class="col-sm-12 response-text">
+               <textarea cols="5" placeholder="Enter response text here...">
+               </textarea>
+            </div>
+        </div>
+        <div class="response-footer">
+            <button class="button-no-frame trash-response-btn"><i class="fa fa-trash"></i></button>
+            <button class="editor-normal-btn"><i class="fa fa-plus"></i> Add Outcome</button>
+        </div>
+        <div class="connector"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var $cloneResponse = $('.conversation_templates.response_template__js').eq(0);
+    var $listContainer = $('.responses_list__js');
+
+    $('.add-response-btn').on('click', function (e) {
+        e.preventDefault();
+        $cloneResponse.clone().appendTo($listContainer);
+    });
+
+    $('.conversation_template__js').on('click', '.trash-response-btn', function (e) {
+        e.preventDefault();
+        $(e.target).closest('.response_template__js').remove();
+    });
+</script>
+</body>
+</html>

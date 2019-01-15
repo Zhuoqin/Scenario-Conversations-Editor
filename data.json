@@ -1,0 +1,56 @@
+{
+  "data": {
+    "name": "World"
+  },
+  "children": [
+    {
+      "data": {
+        "name": "Asia"
+      },
+      "children": [
+        {
+          "data": {
+            "name": "Eastern Asia"
+          },
+          "children": [
+            {
+              "data": {
+                "name": "China"
+              }
+            },
+            {
+              "data": {
+                "name": "China, Hong Kong Special Administrative Region"
+              }
+            },
+            {
+              "data": {
+                "name": "China, Macao Special Administrative Region"
+              }
+            },
+            {
+              "data": {
+                "name": "Democratic People's Republic of Korea"
+              }
+            },
+            {
+              "data": {
+                "name": "Japan"
+              }
+            },
+            {
+              "data": {
+                "name": "Mongolia"
+              }
+            },
+            {
+              "data": {
+                "name": "Republic of Korea"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
