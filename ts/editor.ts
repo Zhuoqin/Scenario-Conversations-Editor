@@ -6,13 +6,14 @@ import {
     linkHorizontal,
     zoom,
     event,
+    drag,
+    mouse,
+    style
 } from 'd3';
 
-import _ = require('lodash');
 import nunjucks = require('nunjucks');
 
 declare let $: any;
-declare let d3: any;
 declare let window: any;
 
 export class EditorClass {
@@ -67,6 +68,39 @@ export class EditorClass {
     private async buildContent() {
         this.config = await this.retrieveFakeData();
         this.buildMapList();
+
+        let dragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let position;
+
+        select('.conversation_start').call(drag()
+            .on('drag', function () {
+                let mouseEvent = event.sourceEvent;
+                currentX = mouseEvent.clientX - initialX;
+                currentY = mouseEvent.clientY - initialY;
+                if (position) {
+                    $(this).css({left: position.left + currentX, top: position.top + currentY});
+                }
+            })
+            .on('end', function () {
+                initialX = 0;
+                initialY = 0;
+                dragging = false;
+                position = null;
+                $(this).css('z-index', 'inherit');
+            })
+            .on('start', function () {
+                dragging = true;
+                let mouseEvent = event.sourceEvent;
+                initialX = mouseEvent.clientX;
+                initialY = mouseEvent.clientY;
+                position = $(this).offset();
+                $(this).css('z-index', '10');
+            })
+        );
     }
 
     private buildMapList() {
