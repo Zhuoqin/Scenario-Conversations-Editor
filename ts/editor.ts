@@ -5,13 +5,14 @@ import {
     hierarchy,
     linkHorizontal,
     zoom,
-    event
+    event,
 } from 'd3';
 
 import _ = require('lodash');
 import nunjucks = require('nunjucks');
 
 declare let $: any;
+declare let d3: any;
 declare let window: any;
 
 export class EditorClass {
@@ -47,6 +48,19 @@ export class EditorClass {
         this.$container.on('click', '.conversation_template__js .trash-response-btn', function (e) {
             e.preventDefault();
             $(e.target).closest('.response_template__js').remove();
+        });
+
+        this.$container.on('click', '.connector', function (e) {
+            e.preventDefault();
+            $(e.target).toggleClass('active');
+        });
+
+
+        this.$canvas.on('click', function (e) {
+            e.preventDefault();
+            if (!$(e.target).hasClass('connector')) {
+                $('.connector').removeClass('active');
+            }
         });
     }
 
