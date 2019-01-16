@@ -103,7 +103,9 @@ h1, h2, h3, h4, h5, h6 {
     width: 80%;
     height: 80%; }
   .container .canvas .media-body {
-    padding-top: 25px; }
+    padding-top: 25px;
+    max-width: 275px;
+    width: 100%; }
   .container .canvas .start-text {
     position: absolute;
     top: 2px;

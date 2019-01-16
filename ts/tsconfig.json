@@ -19,5 +19,8 @@
   ],
   "optimization": {
     "minimize": false
-  }
+  },
+  "exclude": [
+    "node_modules"
+  ]
 }

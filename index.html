@@ -15,23 +15,23 @@
 <body>
 <div class="container" id="container">
     <div class="canvas">
-        <div class="conversation_templates conversation_start conversation_template__js">
-            <div class="media">
-                <div class="img-wrapper">
-                    <img class="mr-3" src="images/image.jpg" alt="Generic placeholder image">
-                </div>
-                <div class="media-body">
-                    <h5 class="mt-0 start-text"><span>Start</span></h5>
-                    Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque ante sollicitudin. Cras purus odio, vestibulum in vulputate at, tempus viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec lacinia congue felis in faucibus.
-                </div>
+    </div>
+    <div class="conversation_templates conversation_start conversation_template__js hidden">
+        <div class="media">
+            <div class="img-wrapper">
+                <img class="mr-3" src="images/image.jpg" alt="Generic placeholder image">
             </div>
-            <div class="response-list responses_list__js">
+            <div class="media-body">
+                <h5 class="mt-0 start-text"><span>Start</span></h5>
+                {{data.context}}
+            </div>
+        </div>
+        <div class="response-list responses_list__js">
 
-            </div>
-            <div class="add-response row">
-                <div class="col-sm-12">
-                    <button class="editor-normal-btn add-response-btn"><i class="fa fa-plus"></i> Add Response</button>
-                </div>
+        </div>
+        <div class="add-response row">
+            <div class="col-sm-12">
+                <button class="editor-normal-btn add-response-btn"><i class="fa fa-plus"></i> Add Response</button>
             </div>
         </div>
     </div>
@@ -53,7 +53,7 @@
 <script src="js/editor.js" type="text/javascript"></script>
 
 <script type="text/javascript">
-    new EditorClass($('.container'));
+    new EditorClass($('#container'));
 </script>
 </body>
 </html>
