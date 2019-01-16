@@ -58,14 +58,36 @@ export class EditorClass {
     private buildMapList() {
         const root = hierarchy(this.config);
         const testData = root.descendants();
-        console.log(testData);
+        const conversationRenderString = EditorClass.$conversationTemplate.get(0).outerHTML;
+        let gaps = 100;
+        let space = 15;
+        let conversation_width;
+        let conversation_height;
+        let corePosition;
+        let currentDepth;
+        let depthCounter = 0;
+        let coreConversation;
         testData.forEach(al => {
             // root
-            if (!al.depth) {
-                console.log(al);
-                let $conversation = nunjucks.renderString(EditorClass.$conversationTemplate.get(0).outerHTML, al.data);
-                $($conversation).appendTo(this.$canvas);
+            if (currentDepth === al.depth) {
+                depthCounter++;
             }
+            currentDepth = al.depth;
+            if (!currentDepth) {
+                coreConversation = nunjucks.renderString(conversationRenderString, al.data);
+                $(coreConversation).appendTo(this.$canvas);
+                corePosition = $('.conversation_start').position();
+                conversation_height = $('.conversation_start').height();
+                conversation_width = $('.conversation_start').width();
+                // continue
+                return true;
+            }
+
+            let left = corePosition.left;
+            let radius = left + currentDepth * (conversation_width + space);
+            let top = depthCounter * (conversation_height + space);
+            let conversation = nunjucks.renderString(conversationRenderString, al.data);
+            $(conversation).css({left: radius, top: top}).removeClass('conversation_start').appendTo(this.$canvas);
         });
     }
 

@@ -13,13 +13,15 @@
 </head>
 
 <body>
+
 <div class="container" id="container">
     <div class="canvas">
     </div>
+
     <div class="conversation_templates conversation_start conversation_template__js hidden">
         <div class="media">
             <div class="img-wrapper">
-                <img class="mr-3" src="images/image.jpg" alt="Generic placeholder image">
+                <img class="mr-3" src="{{data.expression_url}}" alt="Generic placeholder image">
             </div>
             <div class="media-body">
                 <h5 class="mt-0 start-text"><span>Start</span></h5>
@@ -35,6 +37,7 @@
             </div>
         </div>
     </div>
+
     <div class="conversation_templates response_template__js hidden">
         <div class="row form-group">
             <div class="col-sm-12 response-text">
