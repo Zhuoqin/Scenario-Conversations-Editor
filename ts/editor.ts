@@ -122,6 +122,11 @@ export class ConversationEditor {
             const $target = $(e.target);
             const $currentResponse = $target.closest('.response_template__js');
             const $currentConversation = $target.closest('.conversation_template__js');
+            let currentResponse = this.responses.get($currentResponse.data('id'));
+            if (currentResponse.hasChildren()) {
+                window.Lemonade.alert({message: "This response has sub-conversations, you need to remove them before deleting."});
+                return;
+            }
             // UI related to elements
             this.responseChangesUI('remove', $currentConversation, $currentResponse);
             // Data related to elements' IDs
@@ -167,6 +172,8 @@ export class ConversationEditor {
                 this.addSvgConnectorLinesData(boxBefore.data('id'), boxAfter.data('id'));
                 this.drawSvgConnectorLinesUI();
                 this.showGuideText(2);
+                // remove active box after connected
+                $('.connector').removeClass('active');
             }
         });
 
@@ -200,6 +207,13 @@ export class ConversationEditor {
                 'display': 'none'
             });
             this.$svgContainer.find('.line.active').removeClass('active');
+        });
+
+        this.$relationship_config.on('click', '#relationship_config_delete', (e) => {
+            e.preventDefault();
+            if (this.$relationship_config.is(':visible') && this.editingRelationship) {
+                this.checkAndRemoveRelationship();
+            }
         });
 
         this.$canvas.on('click', '.conversation_context_container .conversation_context', (e) => {
@@ -337,8 +351,10 @@ export class ConversationEditor {
         let {scenarioData} = this.config;
         let {relationships} = scenarioData;
         let {rootConversation} = scenarioData;
-        this.rootConversation = this.iterativeBuildConversations(rootConversation || {}); // at least build root
-        this.buildRelationships(relationships);
+        if (scenarioData && relationships && rootConversation) {
+            this.rootConversation = this.iterativeBuildConversations(rootConversation || {}); // at least build root
+            this.buildRelationships(relationships);
+        }
     }
 
     /**
@@ -398,15 +414,21 @@ export class ConversationEditor {
      * First, we have data in ts version then we need to compile them into revision required json format to store
      */
     private compileRevisionData() {
+        // default
         let relationships = [];
+        let conversationsList = [];
+        // loop
         this.connectorLines.forEach((relationship: RelationshipLine) => {
             relationships.push(relationship.toJSON());
         });
+        this.conversations.forEach((conversation: Conversation) => {
+            conversationsList.push(conversation.deepParse());
+        });
         this.revisionData = {
             rootConversation: this.rootConversation.deepParse(),
-            relationships: relationships
+            relationships: relationships,
+            // conversationsList: conversationsList
         };
-
         console.log(this.revisionData);
     }
 
@@ -428,6 +450,49 @@ export class ConversationEditor {
         this.$relationship_config.find('input[name="weight"]').val(this.editingRelationship.getWeight());
         this.$relationship_config.find('input[name="points"]').val(this.editingRelationship.getPoints());
         // ...
+    }
+
+    /**
+     * check the relation ship is removable and execute
+     */
+    private checkAndRemoveRelationship() {
+        let response = this.editingRelationship.getAfter();
+        let conversation = this.editingRelationship.getBefore();
+        let hasMultiParent = conversation.getParents().size > 1;
+        if (!hasMultiParent) {
+            window.Lemonade.alert({message: "You need to connect this conversation to another response before deleting this relationship."});
+            return;
+        }
+
+        window.Lemonade.confirm({
+            message: "Are you sure to remove this relationship?",
+            okButton: "Remove",
+            cancelButton: "Cancel"
+        }, (confirm) => {
+            if (confirm) {
+                this.connectorLines.delete(this.editingRelationship.getId());
+                response.removeConversation(conversation);
+                conversation.removeParentResponse(response);
+                // adjust depth
+                conversation.setDepth(this.retrieveDepthFromParent(conversation));
+                // reset form
+                this.editingRelationship = null;
+                this.$relationship_config.css({
+                    'z-index': -1,
+                    'display': 'none'
+                });
+            }
+            this.redrawSvgConnectorLines();
+        });
+    }
+
+    /**
+     * parent conversation's depth are known, use parent's to calculate sub conversation's depth
+     */
+    private retrieveDepthFromParent(conversation: Conversation): number {
+        let availableParent: Response = Array.from(conversation.getParents()).shift();
+        let parentDepth = availableParent.getParent().getDepth();
+        return parentDepth + 1;
     }
 
     /**
@@ -584,20 +649,33 @@ export class ConversationEditor {
      * @param afterID
      */
     private addSvgConnectorLinesData(beforeID: string, afterID: string): void {
+        // root never has parent
+        if (beforeID === this.rootConversation.getUuid()) {
+            return;
+        }
+
+        // add into response's children
+        let conversation = this.getConversationById(beforeID);
+        let response = this.getResponseById(afterID);
+
+        // no connect to itself
+        if (conversation.getUuid() === response.getParent().getUuid()) {
+            return;
+        }
+
         // push into lines array
         const combID: string = `comb_${beforeID}_${afterID}`;
         let newRelationShip = new RelationshipLine(combID, this.getConversationById(beforeID), this.getResponseById(afterID));
         this.connectorLines.set(combID, newRelationShip);
-        // add into response's children
-        let conversation = this.getConversationById(beforeID);
-        let response = this.getResponseById(afterID);
+
+        // give the response relationship to new created conversation
         if (conversation && response) {
-            // give the response relationship to new created conversation
             response.addConversation(conversation);
             conversation.addParentResponse(response);
             // give depth
-            let lastDepth = response.getParent().getDepth();
-            conversation.setDepth(lastDepth + 1);
+            let nextDepth = response.getParent().getDepth() + 1;
+            let maxDepth = Math.max(nextDepth, conversation.getDepth());
+            conversation.setDepth(maxDepth);
         }
     }
 
@@ -751,9 +829,13 @@ export class ConversationEditor {
     }
 
     private adjustCanvasSize() {
-        const radius = Math.max(...Array.from(this.conversationStack.values())) * (ConversationEditor.CONVERSATION_HEIGHT + ConversationEditor.CONVERSATION_SPACE_Y)
-            + Math.max(...Array.from(this.responseStack.values())) * (ConversationEditor.RESPONSE_HEIGHT + ConversationEditor.CONVERSATION_SPACE_Y);
-
+        const conversationStacks = Math.max(...Array.from(this.conversationStack.values())) + 1;
+        const responseStacks = Math.max(...Array.from(this.responseStack.values())) + 1;
+        let maxX = (this.conversationStack.size + 1) * (ConversationEditor.CONVERSATION_WIDTH + ConversationEditor.CONVERSATION_SPACE_X);
+        let maxY = conversationStacks * ConversationEditor.CONVERSATION_HEIGHT
+            + responseStacks * ConversationEditor.RESPONSE_HEIGHT + conversationStacks * ConversationEditor.CONVERSATION_SPACE_Y;
+        let radius = Math.max(maxX, maxY);
+        // mini size 1024x1024
         this.$canvas.height(`${radius}px`);
         this.$canvas.width(`${radius}px`);
     }
@@ -790,8 +872,8 @@ export class ConversationEditor {
         let isNewLevel = !currentConversationStack;
 
         // The stack of responses height
-        let increment = conversation.getResponses().size;
         let currentResponseStack = this.responseStack.get(depth) || 0;
+        let increment = conversation.getResponses().size;
         this.responseStack.set(depth, currentResponseStack + increment);
 
         // position x: depth * (conversation width + space)
@@ -946,7 +1028,7 @@ export class ConversationEditor {
         });
         // affected relationship update
         this.updateRelationshipOnRemoval(currentConversation.getUuid());
-        this.conversations.delete(currentConversation.getUuid);
+        this.conversations.delete(currentConversation.getUuid());
     }
 
     public setCharacter(character: string) {
