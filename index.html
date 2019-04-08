@@ -43,7 +43,8 @@
                             <input name="points" type="number" maxlength="5" required>
                         </div>
                         <div class="btn-wrap">
-                            <button class="btn btn-primary" id="relationship_config_close" type="submit">close</button>
+                            <button class="btn btn-danger" id="relationship_config_delete" type="button">Delete</button>
+                            <button class="btn btn-primary" id="relationship_config_close" type="submit">Close</button>
                         </div>
                     </form>
                 </div>
@@ -85,17 +86,17 @@
         </div>
         <div class="response-list responses_list__js">
             {% for response in responses %}
-            <div class="conversation_templates response_template__js" data-id="{{response.toJSON().id}}">
+            <div class="conversation_templates response_template__js" data-id="{{response.id}}">
                 <div class="row form-group">
                     <div class="col-sm-12 response-text">
-                        <textarea cols="4" placeholder="Enter response text here...">{{response.toJSON().text}}</textarea>
+                        <textarea cols="4" placeholder="Enter response text here...">{{response.text}}</textarea>
                     </div>
                 </div>
                 <div class="response-footer">
                     <button class="button-no-frame trash-response-btn"><i class="fa fa-trash"></i></button>
                     <button class="editor-normal-btn add-outcome-btn"><i class="fa fa-plus"></i> Add Outcome</button>
                 </div>
-                <div class="connector after" data-id="{{response.toJSON().id}}"></div>
+                <div class="connector after" data-id="{{response.id}}"></div>
             </div>
             {% endfor %}
         </div>
@@ -125,372 +126,364 @@
 <script type="text/javascript">
     var fakeData = {
         "scenarioData": {
-            "rootConversation": {
-                "id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a", "type": "conversation", "depth": 0, "context": "This is The Conversation 111111111 Context Test", "expression_url": "hector", "expression_name": "hector", "hasChildren": true, "response_children": [{
-                    "id": "bc21ce7e-cb5d-43fe-95e3-42caa8ef6b54", "type": "response", "text": "1", "hasChildren": true, "conversation_children": [{
-                        "id": "0c710b30-d87b-47eb-8318-9671312b84a1", "type": "conversation", "depth": 1, "context": "This is The Conversation 222222222 Context Test..", "expression_url": "hector", "expression_name": "hector", "hasChildren": true, "response_children": [{
-                            "id": "9025acc7-5b9f-4aff-9646-315095772ba0", "type": "response", "text": "", "hasChildren": true, "conversation_children": [{
-                                "id": "fb888aaa-a3c7-4107-ba37-3617998cf6bb", "type": "conversation", "depth": 2, "context": "", "expression_url": "hector", "expression_name": "hector", "hasChildren": true, "response_children": [{
-                                    "id": "1aef7941-2131-4858-9a73-ecd37e0a8429",
-                                    "type": "response",
-                                    "text": "new test",
-                                    "hasChildren": true,
-                                    "conversation_children": [{
-                                        "id": "cec5ae83-6a79-48e5-b32f-36e079f29982",
-                                        "type": "conversation",
-                                        "depth": 3,
-                                        "context": "new test conversation 1",
-                                        "expression_url": "hector",
-                                        "expression_name": "hector",
-                                        "hasChildren": false,
-                                        "response_children": []
-                                    }, {
-                                        "id": "2ca83ec6-a0b1-4aae-ad57-cc2b7e3521b6",
-                                        "type": "conversation",
-                                        "depth": 3,
-                                        "context": "new test conversation 2",
-                                        "expression_url": "hector",
-                                        "expression_name": "hector",
-                                        "hasChildren": false,
-                                        "response_children": []
-                                    }, {
-                                        "id": "ee47a282-180f-40a6-b0f9-25b6b95a533d",
-                                        "type": "conversation",
-                                        "depth": 3,
-                                        "context": "new test conversation 3",
-                                        "expression_url": "hector",
-                                        "expression_name": "hector",
-                                        "hasChildren": false,
-                                        "response_children": []
-                                    }, {
-                                        "id": "4e5f5af8-7195-477a-88c2-c62b0d587b3a",
-                                        "type": "conversation",
-                                        "depth": 3,
-                                        "context": "new test conversation 4",
-                                        "expression_url": "hector",
-                                        "expression_name": "hector",
-                                        "hasChildren": true,
-                                        "response_children": [{
-                                            "id": "a3eb0872-93a2-4d14-9c22-0e0d26504d9a",
-                                            "type": "response",
-                                            "text": "",
-                                            "hasChildren": true,
-                                            "conversation_children": [{"id": "6f1e29c6-8e34-41f5-aa9b-cf6bc8f442e2", "type": "conversation", "depth": 4, "context": "new test conversation 4-1", "expression_url": "hector", "expression_name": "hector", "hasChildren": false, "response_children": []}]
-                                        }]
-                                    }]
-                                }]
-                            }]
-                        }]
-                    }]
-                }, {
-                    "id": "dde69151-284e-4aca-8c6f-1e6702f5f506", "type": "response", "text": "2", "hasChildren": true, "conversation_children": [{
-                        "id": "48b557b9-2702-4448-b972-3d862d083921",
-                        "type": "conversation",
-                        "depth": 1,
-                        "context": "This is The Conversation 3333333 Context Test",
-                        "expression_url": "hector",
-                        "expression_name": "hector",
-                        "hasChildren": true,
-                        "response_children": [{
-                            "id": "a06b4fbd-64f8-40a3-8eaa-6bf6ee83364f",
-                            "type": "response",
-                            "text": "5",
-                            "hasChildren": true,
-                            "conversation_children": [{
-                                "id": "d3b4f80f-5dd2-426e-980f-22c31f331764",
-                                "type": "conversation",
-                                "depth": 2,
-                                "context": "This is The Conversation 66666666 Context Test",
-                                "expression_url": "hector",
-                                "expression_name": "hector",
-                                "hasChildren": true,
-                                "response_children": [{"id": "85821f0a-afdb-48d6-8282-8be064dfa190", "type": "response", "text": "7", "hasChildren": false, "conversation_children": []}, {
-                                    "id": "08f39b5e-93c4-4423-a183-54ac11e43de3",
-                                    "type": "response",
-                                    "text": "8",
-                                    "hasChildren": false,
-                                    "conversation_children": []
-                                }]
-                            }]
-                        }, {
-                            "id": "615fbc48-a5e7-42b9-8341-3ef505efc589",
-                            "type": "response",
-                            "text": "6",
-                            "hasChildren": true,
-                            "conversation_children": [{
-                                "id": "d3b4f80f-5dd2-426e-980f-22c31f331764",
-                                "type": "conversation",
-                                "depth": 2,
-                                "context": "This is The Conversation 66666666 Context Test",
-                                "expression_url": "hector",
-                                "expression_name": "hector",
-                                "hasChildren": true,
-                                "response_children": [{"id": "85821f0a-afdb-48d6-8282-8be064dfa190", "type": "response", "text": "7", "hasChildren": false, "conversation_children": []}, {
-                                    "id": "08f39b5e-93c4-4423-a183-54ac11e43de3",
-                                    "type": "response",
-                                    "text": "8",
-                                    "hasChildren": false,
-                                    "conversation_children": []
-                                }]
-                            }]
-                        }, {
-                            "id": "53f2a5a9-40e5-4ae9-9b82-3454c857aaac",
-                            "type": "response",
-                            "text": "",
-                            "hasChildren": true,
-                            "conversation_children": [{
-                                "id": "57ecba0e-70b7-4f90-bda4-c8c8ae635dfa",
-                                "type": "conversation",
-                                "depth": 2,
-                                "context": "new test 1-15",
-                                "expression_url": "hector",
-                                "expression_name": "hector",
-                                "hasChildren": true,
-                                "response_children": [{
-                                    "id": "ba25d38a-6a2f-4e0b-8fff-1deb725dda91",
-                                    "type": "response",
-                                    "text": "",
-                                    "hasChildren": true,
-                                    "conversation_children": [{"id": "fe320a2c-61cc-482d-8425-b8265d9c5829", "type": "conversation", "depth": 3, "context": "new test 1-15-2", "expression_url": "hector", "expression_name": "hector", "hasChildren": false, "response_children": []}]
-                                }]
-                            }]
-                        }]
-                    }, {
-                        "id": "4133e0a7-cf67-4e70-bb0e-94e44b65375a",
-                        "type": "conversation",
-                        "depth": 1,
-                        "context": "",
-                        "expression_url": "hector",
-                        "expression_name": "hector",
-                        "hasChildren": true,
-                        "response_children": [{"id": "7b52cd50-4eb9-4a82-966d-c593b13ad061", "type": "response", "text": "", "hasChildren": false, "conversation_children": []}]
-                    }]
-                }, {
-                    "id": "0498f5f1-cfb7-4b3d-9370-4f3450448b54",
-                    "type": "response",
-                    "text": "3",
-                    "hasChildren": true,
-                    "conversation_children": [{
-                        "id": "b1eee250-a884-46b0-8797-8c7203da4672",
-                        "type": "conversation",
-                        "depth": 1,
-                        "context": "This is The Conversation 444444 Context Test",
-                        "expression_url": "hector",
-                        "expression_name": "hector",
-                        "hasChildren": false,
-                        "response_children": []
-                    }, {
-                        "id": "4133e0a7-cf67-4e70-bb0e-94e44b65375a",
-                        "type": "conversation",
-                        "depth": 1,
-                        "context": "",
-                        "expression_url": "hector",
-                        "expression_name": "hector",
-                        "hasChildren": true,
-                        "response_children": [{"id": "7b52cd50-4eb9-4a82-966d-c593b13ad061", "type": "response", "text": "", "hasChildren": false, "conversation_children": []}]
-                    }]
-                }, {
-                    "id": "15e2fdf1-fe51-4637-98f6-b25bb911e84c",
-                    "type": "response",
-                    "text": "4",
-                    "hasChildren": true,
-                    "conversation_children": [{"id": "dda01baf-ce28-431a-b166-fb2b21fd23c2", "type": "conversation", "depth": 1, "context": "This is The Conversation 555555 Context Test", "expression_url": "hector", "expression_name": "hector", "hasChildren": false, "response_children": []}]
-                }]
-            },
             "relationships": [{
-                "id": "comb_0c710b30-d87b-47eb-8318-9671312b84a1_bc21ce7e-cb5d-43fe-95e3-42caa8ef6b54",
-                "weight": 300,
-                "points": 300,
-                "conversation": {"id": "0c710b30-d87b-47eb-8318-9671312b84a1", "type": "conversation", "depth": 1, "context": "This is The Conversation 222222222 Context Test..", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                "response": {
-                    "id": "bc21ce7e-cb5d-43fe-95e3-42caa8ef6b54",
-                    "parent": {"id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a", "type": "conversation", "depth": 0, "context": "This is The Conversation 111111111 Context Test", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                    "children": [],
-                    "text": "1",
-                    "type": "response"
-                }
-            }, {
                 "id": "comb_48b557b9-2702-4448-b972-3d862d083921_dde69151-284e-4aca-8c6f-1e6702f5f506",
-                "weight": 0,
-                "points": 0,
-                "conversation": {"id": "48b557b9-2702-4448-b972-3d862d083921", "type": "conversation", "depth": 1, "context": "This is The Conversation 3333333 Context Test", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                "response": {
-                    "id": "dde69151-284e-4aca-8c6f-1e6702f5f506",
-                    "parent": {"id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a", "type": "conversation", "depth": 0, "context": "This is The Conversation 111111111 Context Test", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                    "children": [],
-                    "text": "2",
-                    "type": "response"
-                }
+                "weight": 1,
+                "points": 1,
+                "conversation_id": "48b557b9-2702-4448-b972-3d862d083921",
+                "response_id": "dde69151-284e-4aca-8c6f-1e6702f5f506"
             }, {
                 "id": "comb_d3b4f80f-5dd2-426e-980f-22c31f331764_a06b4fbd-64f8-40a3-8eaa-6bf6ee83364f",
-                "weight": 333,
-                "points": 111,
-                "conversation": {"id": "d3b4f80f-5dd2-426e-980f-22c31f331764", "type": "conversation", "depth": 2, "context": "This is The Conversation 66666666 Context Test", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                "response": {
-                    "id": "a06b4fbd-64f8-40a3-8eaa-6bf6ee83364f",
-                    "parent": {"id": "48b557b9-2702-4448-b972-3d862d083921", "type": "conversation", "depth": 1, "context": "This is The Conversation 3333333 Context Test", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                    "children": [],
-                    "text": "5",
-                    "type": "response"
-                }
-            }, {
-                "id": "comb_d3b4f80f-5dd2-426e-980f-22c31f331764_615fbc48-a5e7-42b9-8341-3ef505efc589",
-                "weight": 123,
-                "points": 321,
-                "conversation": {"id": "d3b4f80f-5dd2-426e-980f-22c31f331764", "type": "conversation", "depth": 2, "context": "This is The Conversation 66666666 Context Test", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                "response": {
-                    "id": "615fbc48-a5e7-42b9-8341-3ef505efc589",
-                    "parent": {"id": "48b557b9-2702-4448-b972-3d862d083921", "type": "conversation", "depth": 1, "context": "This is The Conversation 3333333 Context Test", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                    "children": [],
-                    "text": "6",
-                    "type": "response"
-                }
-            }, {
-                "id": "comb_b1eee250-a884-46b0-8797-8c7203da4672_0498f5f1-cfb7-4b3d-9370-4f3450448b54",
-                "weight": 0,
-                "points": 0,
-                "conversation": {"id": "b1eee250-a884-46b0-8797-8c7203da4672", "type": "conversation", "depth": 1, "context": "This is The Conversation 444444 Context Test", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                "response": {
-                    "id": "0498f5f1-cfb7-4b3d-9370-4f3450448b54",
-                    "parent": {"id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a", "type": "conversation", "depth": 0, "context": "This is The Conversation 111111111 Context Test", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                    "children": [],
-                    "text": "3",
-                    "type": "response"
-                }
-            }, {
-                "id": "comb_dda01baf-ce28-431a-b166-fb2b21fd23c2_15e2fdf1-fe51-4637-98f6-b25bb911e84c",
-                "weight": 0,
-                "points": 0,
-                "conversation": {"id": "dda01baf-ce28-431a-b166-fb2b21fd23c2", "type": "conversation", "depth": 1, "context": "This is The Conversation 555555 Context Test", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                "response": {
-                    "id": "15e2fdf1-fe51-4637-98f6-b25bb911e84c",
-                    "parent": {"id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a", "type": "conversation", "depth": 0, "context": "This is The Conversation 111111111 Context Test", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                    "children": [],
-                    "text": "4",
-                    "type": "response"
-                }
+                "weight": 1,
+                "points": 6,
+                "conversation_id": "d3b4f80f-5dd2-426e-980f-22c31f331764",
+                "response_id": "a06b4fbd-64f8-40a3-8eaa-6bf6ee83364f"
             }, {
                 "id": "comb_4133e0a7-cf67-4e70-bb0e-94e44b65375a_dde69151-284e-4aca-8c6f-1e6702f5f506",
-                "weight": 0,
-                "points": 0,
-                "conversation": {"id": "4133e0a7-cf67-4e70-bb0e-94e44b65375a", "type": "conversation", "depth": 1, "context": "", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                "response": {
-                    "id": "dde69151-284e-4aca-8c6f-1e6702f5f506",
-                    "parent": {"id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a", "type": "conversation", "depth": 0, "context": "This is The Conversation 111111111 Context Test", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                    "children": [],
-                    "text": "2",
-                    "type": "response"
-                }
+                "weight": 1,
+                "points": 2,
+                "conversation_id": "4133e0a7-cf67-4e70-bb0e-94e44b65375a",
+                "response_id": "dde69151-284e-4aca-8c6f-1e6702f5f506"
             }, {
                 "id": "comb_4133e0a7-cf67-4e70-bb0e-94e44b65375a_0498f5f1-cfb7-4b3d-9370-4f3450448b54",
+                "weight": 1,
+                "points": 4,
+                "conversation_id": "4133e0a7-cf67-4e70-bb0e-94e44b65375a",
+                "response_id": "0498f5f1-cfb7-4b3d-9370-4f3450448b54"
+            }, {
+                "id": "comb_57ecba0e-70b7-4f90-bda4-c8c8ae635dfa_1c4df1b3-8450-419e-bbe4-a2ead789c0d9",
+                "weight": 1,
+                "points": 8,
+                "conversation_id": "57ecba0e-70b7-4f90-bda4-c8c8ae635dfa",
+                "response_id": "1c4df1b3-8450-419e-bbe4-a2ead789c0d9"
+            }, {
+                "id": "comb_57ecba0e-70b7-4f90-bda4-c8c8ae635dfa_60b66c1f-5d43-4be2-8b36-38ce57637530",
+                "weight": 1,
+                "points": 9,
+                "conversation_id": "57ecba0e-70b7-4f90-bda4-c8c8ae635dfa",
+                "response_id": "60b66c1f-5d43-4be2-8b36-38ce57637530"
+            }, {
+                "id": "comb_d3b4f80f-5dd2-426e-980f-22c31f331764_53f2a5a9-40e5-4ae9-9b82-3454c857aaac",
+                "weight": 1,
+                "points": 7,
+                "conversation_id": "d3b4f80f-5dd2-426e-980f-22c31f331764",
+                "response_id": "53f2a5a9-40e5-4ae9-9b82-3454c857aaac"
+            }, {
+                "id": "comb_d3b4f80f-5dd2-426e-980f-22c31f331764_15e2fdf1-fe51-4637-98f6-b25bb911e84c",
+                "weight": 1,
+                "points": 5,
+                "conversation_id": "d3b4f80f-5dd2-426e-980f-22c31f331764",
+                "response_id": "15e2fdf1-fe51-4637-98f6-b25bb911e84c"
+            }, {
+                "id": "comb_48b557b9-2702-4448-b972-3d862d083921_0498f5f1-cfb7-4b3d-9370-4f3450448b54",
                 "weight": 0,
                 "points": 0,
-                "conversation": {"id": "4133e0a7-cf67-4e70-bb0e-94e44b65375a", "type": "conversation", "depth": 1, "context": "", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                "response": {
-                    "id": "0498f5f1-cfb7-4b3d-9370-4f3450448b54",
-                    "parent": {"id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a", "type": "conversation", "depth": 0, "context": "This is The Conversation 111111111 Context Test", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                    "children": [],
+                "conversation_id": "48b557b9-2702-4448-b972-3d862d083921",
+                "response_id": "0498f5f1-cfb7-4b3d-9370-4f3450448b54"
+            }, {
+                "id": "comb_d3b4f80f-5dd2-426e-980f-22c31f331764_615fbc48-a5e7-42b9-8341-3ef505efc589",
+                "weight": 0,
+                "points": 0,
+                "conversation_id": "d3b4f80f-5dd2-426e-980f-22c31f331764",
+                "response_id": "615fbc48-a5e7-42b9-8341-3ef505efc589"
+            }, {
+                "id": "comb_f1179ff1-d88d-4e22-87b1-44d6bff8323e_85821f0a-afdb-48d6-8282-8be064dfa190",
+                "weight": 0,
+                "points": 0,
+                "conversation_id": "f1179ff1-d88d-4e22-87b1-44d6bff8323e",
+                "response_id": "85821f0a-afdb-48d6-8282-8be064dfa190"
+            }, {
+                "id": "comb_c01145df-0327-4cd5-a838-5c7eb80ab68b_08f39b5e-93c4-4423-a183-54ac11e43de3",
+                "weight": 0,
+                "points": 0,
+                "conversation_id": "c01145df-0327-4cd5-a838-5c7eb80ab68b",
+                "response_id": "08f39b5e-93c4-4423-a183-54ac11e43de3"
+            }, {
+                "id": "comb_c01145df-0327-4cd5-a838-5c7eb80ab68b_ba25d38a-6a2f-4e0b-8fff-1deb725dda91",
+                "weight": 0,
+                "points": 0,
+                "conversation_id": "c01145df-0327-4cd5-a838-5c7eb80ab68b",
+                "response_id": "ba25d38a-6a2f-4e0b-8fff-1deb725dda91"
+            }, {
+                "id": "comb_0e285614-a2ba-4a18-876c-23931d5232f3_ba25d38a-6a2f-4e0b-8fff-1deb725dda91",
+                "weight": 0,
+                "points": 0,
+                "conversation_id": "0e285614-a2ba-4a18-876c-23931d5232f3",
+                "response_id": "ba25d38a-6a2f-4e0b-8fff-1deb725dda91"
+            }, {
+                "id": "comb_1fa27f0e-da2a-4d03-a15c-a69242613487_ba25d38a-6a2f-4e0b-8fff-1deb725dda91",
+                "weight": 0,
+                "points": 0,
+                "conversation_id": "1fa27f0e-da2a-4d03-a15c-a69242613487",
+                "response_id": "ba25d38a-6a2f-4e0b-8fff-1deb725dda91"
+            }, {
+                "id": "comb_d5dc9696-09c5-4084-975e-a94254980154_ba25d38a-6a2f-4e0b-8fff-1deb725dda91",
+                "weight": 0,
+                "points": 0,
+                "conversation_id": "d5dc9696-09c5-4084-975e-a94254980154",
+                "response_id": "ba25d38a-6a2f-4e0b-8fff-1deb725dda91"
+            }, {
+                "id": "comb_2dacd49c-6094-4a9c-ae4b-797fa0dfbb12_60b66c1f-5d43-4be2-8b36-38ce57637530",
+                "weight": 0,
+                "points": 0,
+                "conversation_id": "2dacd49c-6094-4a9c-ae4b-797fa0dfbb12",
+                "response_id": "60b66c1f-5d43-4be2-8b36-38ce57637530"
+            }, {"id": "comb_49ac887f-36d4-4290-9fde-c465cb0b0b11_60b66c1f-5d43-4be2-8b36-38ce57637530", "weight": 0, "points": 0, "conversation_id": "49ac887f-36d4-4290-9fde-c465cb0b0b11", "response_id": "60b66c1f-5d43-4be2-8b36-38ce57637530"}],
+            "conversations": [{
+                "id": "d3b4f80f-5dd2-426e-980f-22c31f331764",
+                "type": "conversation",
+                "depth": 2,
+                "context": "This is The Conversation 66666666 Context Test",
+                "expression_url": "patrick",
+                "expression_name": "patrick",
+                "hasParents": true,
+                "hasChildren": true,
+                "responses": [{"id": "85821f0a-afdb-48d6-8282-8be064dfa190", "text": "10", "type": "response", "parent_id": "d3b4f80f-5dd2-426e-980f-22c31f331764", "children_ids": ["f1179ff1-d88d-4e22-87b1-44d6bff8323e"]}, {
+                    "id": "08f39b5e-93c4-4423-a183-54ac11e43de3",
+                    "text": "11",
+                    "type": "response",
+                    "parent_id": "d3b4f80f-5dd2-426e-980f-22c31f331764",
+                    "children_ids": ["c01145df-0327-4cd5-a838-5c7eb80ab68b"]
+                }],
+                "parents": [{"id": "a06b4fbd-64f8-40a3-8eaa-6bf6ee83364f", "text": "4", "type": "response", "parent_id": "48b557b9-2702-4448-b972-3d862d083921", "children_ids": ["d3b4f80f-5dd2-426e-980f-22c31f331764"]}, {
+                    "id": "615fbc48-a5e7-42b9-8341-3ef505efc589",
+                    "text": "5",
+                    "type": "response",
+                    "parent_id": "48b557b9-2702-4448-b972-3d862d083921",
+                    "children_ids": ["d3b4f80f-5dd2-426e-980f-22c31f331764"]
+                }, {"id": "53f2a5a9-40e5-4ae9-9b82-3454c857aaac", "text": "6", "type": "response", "parent_id": "48b557b9-2702-4448-b972-3d862d083921", "children_ids": ["d3b4f80f-5dd2-426e-980f-22c31f331764"]}, {
+                    "id": "15e2fdf1-fe51-4637-98f6-b25bb911e84c",
                     "text": "3",
-                    "type": "response"
-                }
+                    "type": "response",
+                    "parent_id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a",
+                    "children_ids": ["d3b4f80f-5dd2-426e-980f-22c31f331764"]
+                }]
             }, {
-                "id": "comb_fb888aaa-a3c7-4107-ba37-3617998cf6bb_9025acc7-5b9f-4aff-9646-315095772ba0",
-                "weight": 0,
-                "points": 0,
-                "conversation": {"id": "fb888aaa-a3c7-4107-ba37-3617998cf6bb", "type": "conversation", "depth": 2, "context": "", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                "response": {
-                    "id": "9025acc7-5b9f-4aff-9646-315095772ba0",
-                    "parent": {"id": "0c710b30-d87b-47eb-8318-9671312b84a1", "type": "conversation", "depth": 1, "context": "This is The Conversation 222222222 Context Test..", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                    "children": [],
-                    "text": "",
-                    "type": "response"
-                }
+                "id": "48b557b9-2702-4448-b972-3d862d083921",
+                "type": "conversation",
+                "depth": 1,
+                "context": "This is The Conversation 3333333 Context Test",
+                "expression_url": "patrick",
+                "expression_name": "patrick",
+                "hasParents": true,
+                "hasChildren": true,
+                "responses": [{"id": "a06b4fbd-64f8-40a3-8eaa-6bf6ee83364f", "text": "4", "type": "response", "parent_id": "48b557b9-2702-4448-b972-3d862d083921", "children_ids": ["d3b4f80f-5dd2-426e-980f-22c31f331764"]}, {
+                    "id": "615fbc48-a5e7-42b9-8341-3ef505efc589",
+                    "text": "5",
+                    "type": "response",
+                    "parent_id": "48b557b9-2702-4448-b972-3d862d083921",
+                    "children_ids": ["d3b4f80f-5dd2-426e-980f-22c31f331764"]
+                }, {"id": "53f2a5a9-40e5-4ae9-9b82-3454c857aaac", "text": "6", "type": "response", "parent_id": "48b557b9-2702-4448-b972-3d862d083921", "children_ids": ["d3b4f80f-5dd2-426e-980f-22c31f331764"]}],
+                "parents": [{
+                    "id": "dde69151-284e-4aca-8c6f-1e6702f5f506",
+                    "text": "1",
+                    "type": "response",
+                    "parent_id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a",
+                    "children_ids": ["48b557b9-2702-4448-b972-3d862d083921", "4133e0a7-cf67-4e70-bb0e-94e44b65375a"]
+                }, {"id": "0498f5f1-cfb7-4b3d-9370-4f3450448b54", "text": "2", "type": "response", "parent_id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a", "children_ids": ["4133e0a7-cf67-4e70-bb0e-94e44b65375a", "48b557b9-2702-4448-b972-3d862d083921"]}]
             }, {
-                "id": "comb_cec5ae83-6a79-48e5-b32f-36e079f29982_1aef7941-2131-4858-9a73-ecd37e0a8429",
-                "weight": 0,
-                "points": 0,
-                "conversation": {"id": "cec5ae83-6a79-48e5-b32f-36e079f29982", "type": "conversation", "depth": 3, "context": "new test conversation 1", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                "response": {
-                    "id": "1aef7941-2131-4858-9a73-ecd37e0a8429",
-                    "parent": {"id": "fb888aaa-a3c7-4107-ba37-3617998cf6bb", "type": "conversation", "depth": 2, "context": "", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                    "children": [],
-                    "text": "new test",
-                    "type": "response"
-                }
-            }, {
-                "id": "comb_2ca83ec6-a0b1-4aae-ad57-cc2b7e3521b6_1aef7941-2131-4858-9a73-ecd37e0a8429",
-                "weight": 0,
-                "points": 0,
-                "conversation": {"id": "2ca83ec6-a0b1-4aae-ad57-cc2b7e3521b6", "type": "conversation", "depth": 3, "context": "new test conversation 2", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                "response": {
-                    "id": "1aef7941-2131-4858-9a73-ecd37e0a8429",
-                    "parent": {"id": "fb888aaa-a3c7-4107-ba37-3617998cf6bb", "type": "conversation", "depth": 2, "context": "", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                    "children": [],
-                    "text": "new test",
-                    "type": "response"
-                }
-            }, {
-                "id": "comb_ee47a282-180f-40a6-b0f9-25b6b95a533d_1aef7941-2131-4858-9a73-ecd37e0a8429",
-                "weight": 0,
-                "points": 0,
-                "conversation": {"id": "ee47a282-180f-40a6-b0f9-25b6b95a533d", "type": "conversation", "depth": 3, "context": "new test conversation 3", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                "response": {
-                    "id": "1aef7941-2131-4858-9a73-ecd37e0a8429",
-                    "parent": {"id": "fb888aaa-a3c7-4107-ba37-3617998cf6bb", "type": "conversation", "depth": 2, "context": "", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                    "children": [],
-                    "text": "new test",
-                    "type": "response"
-                }
-            }, {
-                "id": "comb_4e5f5af8-7195-477a-88c2-c62b0d587b3a_1aef7941-2131-4858-9a73-ecd37e0a8429",
-                "weight": 0,
-                "points": 0,
-                "conversation": {"id": "4e5f5af8-7195-477a-88c2-c62b0d587b3a", "type": "conversation", "depth": 3, "context": "new test conversation 4", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                "response": {
-                    "id": "1aef7941-2131-4858-9a73-ecd37e0a8429",
-                    "parent": {"id": "fb888aaa-a3c7-4107-ba37-3617998cf6bb", "type": "conversation", "depth": 2, "context": "", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                    "children": [],
-                    "text": "new test",
-                    "type": "response"
-                }
-            }, {
-                "id": "comb_6f1e29c6-8e34-41f5-aa9b-cf6bc8f442e2_a3eb0872-93a2-4d14-9c22-0e0d26504d9a",
-                "weight": 0,
-                "points": 0,
-                "conversation": {"id": "6f1e29c6-8e34-41f5-aa9b-cf6bc8f442e2", "type": "conversation", "depth": 4, "context": "new test conversation 4-1", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                "response": {
-                    "id": "a3eb0872-93a2-4d14-9c22-0e0d26504d9a",
-                    "parent": {"id": "4e5f5af8-7195-477a-88c2-c62b0d587b3a", "type": "conversation", "depth": 3, "context": "new test conversation 4", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                    "children": [],
-                    "text": "",
-                    "type": "response"
-                }
-            }, {
-                "id": "comb_57ecba0e-70b7-4f90-bda4-c8c8ae635dfa_53f2a5a9-40e5-4ae9-9b82-3454c857aaac",
-                "weight": 0,
-                "points": 0,
-                "conversation": {"id": "57ecba0e-70b7-4f90-bda4-c8c8ae635dfa", "type": "conversation", "depth": 2, "context": "new test 1-15", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                "response": {
-                    "id": "53f2a5a9-40e5-4ae9-9b82-3454c857aaac",
-                    "parent": {"id": "48b557b9-2702-4448-b972-3d862d083921", "type": "conversation", "depth": 1, "context": "This is The Conversation 3333333 Context Test", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                    "children": [],
-                    "text": "",
-                    "type": "response"
-                }
-            }, {
-                "id": "comb_fe320a2c-61cc-482d-8425-b8265d9c5829_ba25d38a-6a2f-4e0b-8fff-1deb725dda91",
-                "weight": 0,
-                "points": 0,
-                "conversation": {"id": "fe320a2c-61cc-482d-8425-b8265d9c5829", "type": "conversation", "depth": 3, "context": "new test 1-15-2", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                "response": {
+                "id": "57ecba0e-70b7-4f90-bda4-c8c8ae635dfa",
+                "type": "conversation",
+                "depth": 2,
+                "context": "new test 1-15",
+                "expression_url": "patrick",
+                "expression_name": "patrick",
+                "hasParents": true,
+                "hasChildren": true,
+                "responses": [{
                     "id": "ba25d38a-6a2f-4e0b-8fff-1deb725dda91",
-                    "parent": {"id": "57ecba0e-70b7-4f90-bda4-c8c8ae635dfa", "type": "conversation", "depth": 2, "context": "new test 1-15", "expression_url": "hector", "expression_name": "hector", "responses": [], "parents": []},
-                    "children": [],
-                    "text": "",
-                    "type": "response"
-                }
-            }]
-        }, "character": "hector", "qualities": ["a", "b"]
+                    "text": "12",
+                    "type": "response",
+                    "parent_id": "57ecba0e-70b7-4f90-bda4-c8c8ae635dfa",
+                    "children_ids": ["c01145df-0327-4cd5-a838-5c7eb80ab68b", "0e285614-a2ba-4a18-876c-23931d5232f3", "1fa27f0e-da2a-4d03-a15c-a69242613487", "d5dc9696-09c5-4084-975e-a94254980154"]
+                }],
+                "parents": [{"id": "1c4df1b3-8450-419e-bbe4-a2ead789c0d9", "text": "7", "type": "response", "parent_id": "4133e0a7-cf67-4e70-bb0e-94e44b65375a", "children_ids": ["57ecba0e-70b7-4f90-bda4-c8c8ae635dfa"]}, {
+                    "id": "60b66c1f-5d43-4be2-8b36-38ce57637530",
+                    "text": "8",
+                    "type": "response",
+                    "parent_id": "4133e0a7-cf67-4e70-bb0e-94e44b65375a",
+                    "children_ids": ["57ecba0e-70b7-4f90-bda4-c8c8ae635dfa", "2dacd49c-6094-4a9c-ae4b-797fa0dfbb12", "49ac887f-36d4-4290-9fde-c465cb0b0b11"]
+                }]
+            }, {
+                "id": "4133e0a7-cf67-4e70-bb0e-94e44b65375a",
+                "type": "conversation",
+                "depth": 1,
+                "context": "",
+                "expression_url": "patrick",
+                "expression_name": "patrick",
+                "hasParents": true,
+                "hasChildren": true,
+                "responses": [{"id": "1c4df1b3-8450-419e-bbe4-a2ead789c0d9", "text": "7", "type": "response", "parent_id": "4133e0a7-cf67-4e70-bb0e-94e44b65375a", "children_ids": ["57ecba0e-70b7-4f90-bda4-c8c8ae635dfa"]}, {
+                    "id": "60b66c1f-5d43-4be2-8b36-38ce57637530",
+                    "text": "8",
+                    "type": "response",
+                    "parent_id": "4133e0a7-cf67-4e70-bb0e-94e44b65375a",
+                    "children_ids": ["57ecba0e-70b7-4f90-bda4-c8c8ae635dfa", "2dacd49c-6094-4a9c-ae4b-797fa0dfbb12", "49ac887f-36d4-4290-9fde-c465cb0b0b11"]
+                }],
+                "parents": [{
+                    "id": "dde69151-284e-4aca-8c6f-1e6702f5f506",
+                    "text": "1",
+                    "type": "response",
+                    "parent_id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a",
+                    "children_ids": ["48b557b9-2702-4448-b972-3d862d083921", "4133e0a7-cf67-4e70-bb0e-94e44b65375a"]
+                }, {"id": "0498f5f1-cfb7-4b3d-9370-4f3450448b54", "text": "2", "type": "response", "parent_id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a", "children_ids": ["4133e0a7-cf67-4e70-bb0e-94e44b65375a", "48b557b9-2702-4448-b972-3d862d083921"]}]
+            }, {
+                "id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a",
+                "type": "conversation",
+                "depth": 0,
+                "context": "This is The Conversation 111111111 Context Test",
+                "expression_url": "patrick",
+                "expression_name": "patrick",
+                "hasParents": false,
+                "hasChildren": true,
+                "responses": [{
+                    "id": "dde69151-284e-4aca-8c6f-1e6702f5f506",
+                    "text": "1",
+                    "type": "response",
+                    "parent_id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a",
+                    "children_ids": ["48b557b9-2702-4448-b972-3d862d083921", "4133e0a7-cf67-4e70-bb0e-94e44b65375a"]
+                }, {"id": "0498f5f1-cfb7-4b3d-9370-4f3450448b54", "text": "2", "type": "response", "parent_id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a", "children_ids": ["4133e0a7-cf67-4e70-bb0e-94e44b65375a", "48b557b9-2702-4448-b972-3d862d083921"]}, {
+                    "id": "15e2fdf1-fe51-4637-98f6-b25bb911e84c",
+                    "text": "3",
+                    "type": "response",
+                    "parent_id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a",
+                    "children_ids": ["d3b4f80f-5dd2-426e-980f-22c31f331764"]
+                }],
+                "parents": []
+            }, {
+                "id": "f1179ff1-d88d-4e22-87b1-44d6bff8323e",
+                "type": "conversation",
+                "depth": 3,
+                "context": "",
+                "expression_url": "patrick",
+                "expression_name": "patrick",
+                "hasParents": true,
+                "hasChildren": false,
+                "responses": [],
+                "parents": [{"id": "85821f0a-afdb-48d6-8282-8be064dfa190", "text": "10", "type": "response", "parent_id": "d3b4f80f-5dd2-426e-980f-22c31f331764", "children_ids": ["f1179ff1-d88d-4e22-87b1-44d6bff8323e"]}]
+            }, {
+                "id": "c01145df-0327-4cd5-a838-5c7eb80ab68b",
+                "type": "conversation",
+                "depth": 3,
+                "context": "",
+                "expression_url": "patrick",
+                "expression_name": "patrick",
+                "hasParents": true,
+                "hasChildren": false,
+                "responses": [],
+                "parents": [{"id": "08f39b5e-93c4-4423-a183-54ac11e43de3", "text": "11", "type": "response", "parent_id": "d3b4f80f-5dd2-426e-980f-22c31f331764", "children_ids": ["c01145df-0327-4cd5-a838-5c7eb80ab68b"]}, {
+                    "id": "ba25d38a-6a2f-4e0b-8fff-1deb725dda91",
+                    "text": "12",
+                    "type": "response",
+                    "parent_id": "57ecba0e-70b7-4f90-bda4-c8c8ae635dfa",
+                    "children_ids": ["c01145df-0327-4cd5-a838-5c7eb80ab68b", "0e285614-a2ba-4a18-876c-23931d5232f3", "1fa27f0e-da2a-4d03-a15c-a69242613487", "d5dc9696-09c5-4084-975e-a94254980154"]
+                }]
+            }, {
+                "id": "0e285614-a2ba-4a18-876c-23931d5232f3",
+                "type": "conversation",
+                "depth": 3,
+                "context": "",
+                "expression_url": "patrick",
+                "expression_name": "patrick",
+                "hasParents": true,
+                "hasChildren": false,
+                "responses": [],
+                "parents": [{
+                    "id": "ba25d38a-6a2f-4e0b-8fff-1deb725dda91",
+                    "text": "12",
+                    "type": "response",
+                    "parent_id": "57ecba0e-70b7-4f90-bda4-c8c8ae635dfa",
+                    "children_ids": ["c01145df-0327-4cd5-a838-5c7eb80ab68b", "0e285614-a2ba-4a18-876c-23931d5232f3", "1fa27f0e-da2a-4d03-a15c-a69242613487", "d5dc9696-09c5-4084-975e-a94254980154"]
+                }]
+            }, {
+                "id": "1fa27f0e-da2a-4d03-a15c-a69242613487",
+                "type": "conversation",
+                "depth": 3,
+                "context": "",
+                "expression_url": "patrick",
+                "expression_name": "patrick",
+                "hasParents": true,
+                "hasChildren": false,
+                "responses": [],
+                "parents": [{
+                    "id": "ba25d38a-6a2f-4e0b-8fff-1deb725dda91",
+                    "text": "12",
+                    "type": "response",
+                    "parent_id": "57ecba0e-70b7-4f90-bda4-c8c8ae635dfa",
+                    "children_ids": ["c01145df-0327-4cd5-a838-5c7eb80ab68b", "0e285614-a2ba-4a18-876c-23931d5232f3", "1fa27f0e-da2a-4d03-a15c-a69242613487", "d5dc9696-09c5-4084-975e-a94254980154"]
+                }]
+            }, {
+                "id": "d5dc9696-09c5-4084-975e-a94254980154",
+                "type": "conversation",
+                "depth": 3,
+                "context": "",
+                "expression_url": "patrick",
+                "expression_name": "patrick",
+                "hasParents": true,
+                "hasChildren": false,
+                "responses": [],
+                "parents": [{
+                    "id": "ba25d38a-6a2f-4e0b-8fff-1deb725dda91",
+                    "text": "12",
+                    "type": "response",
+                    "parent_id": "57ecba0e-70b7-4f90-bda4-c8c8ae635dfa",
+                    "children_ids": ["c01145df-0327-4cd5-a838-5c7eb80ab68b", "0e285614-a2ba-4a18-876c-23931d5232f3", "1fa27f0e-da2a-4d03-a15c-a69242613487", "d5dc9696-09c5-4084-975e-a94254980154"]
+                }]
+            }, {
+                "id": "2dacd49c-6094-4a9c-ae4b-797fa0dfbb12",
+                "type": "conversation",
+                "depth": 2,
+                "context": "",
+                "expression_url": "patrick",
+                "expression_name": "patrick",
+                "hasParents": true,
+                "hasChildren": false,
+                "responses": [],
+                "parents": [{"id": "60b66c1f-5d43-4be2-8b36-38ce57637530", "text": "8", "type": "response", "parent_id": "4133e0a7-cf67-4e70-bb0e-94e44b65375a", "children_ids": ["57ecba0e-70b7-4f90-bda4-c8c8ae635dfa", "2dacd49c-6094-4a9c-ae4b-797fa0dfbb12", "49ac887f-36d4-4290-9fde-c465cb0b0b11"]}]
+            }, {
+                "id": "49ac887f-36d4-4290-9fde-c465cb0b0b11",
+                "type": "conversation",
+                "depth": 2,
+                "context": "",
+                "expression_url": "patrick",
+                "expression_name": "patrick",
+                "hasParents": true,
+                "hasChildren": false,
+                "responses": [],
+                "parents": [{"id": "60b66c1f-5d43-4be2-8b36-38ce57637530", "text": "8", "type": "response", "parent_id": "4133e0a7-cf67-4e70-bb0e-94e44b65375a", "children_ids": ["57ecba0e-70b7-4f90-bda4-c8c8ae635dfa", "2dacd49c-6094-4a9c-ae4b-797fa0dfbb12", "49ac887f-36d4-4290-9fde-c465cb0b0b11"]}]
+            }],
+            "responses": [{"id": "85821f0a-afdb-48d6-8282-8be064dfa190", "text": "10", "type": "response", "parent_id": "d3b4f80f-5dd2-426e-980f-22c31f331764", "children_ids": ["f1179ff1-d88d-4e22-87b1-44d6bff8323e"]}, {
+                "id": "08f39b5e-93c4-4423-a183-54ac11e43de3",
+                "text": "11",
+                "type": "response",
+                "parent_id": "d3b4f80f-5dd2-426e-980f-22c31f331764",
+                "children_ids": ["c01145df-0327-4cd5-a838-5c7eb80ab68b"]
+            }, {"id": "a06b4fbd-64f8-40a3-8eaa-6bf6ee83364f", "text": "4", "type": "response", "parent_id": "48b557b9-2702-4448-b972-3d862d083921", "children_ids": ["d3b4f80f-5dd2-426e-980f-22c31f331764"]}, {
+                "id": "615fbc48-a5e7-42b9-8341-3ef505efc589",
+                "text": "5",
+                "type": "response",
+                "parent_id": "48b557b9-2702-4448-b972-3d862d083921",
+                "children_ids": ["d3b4f80f-5dd2-426e-980f-22c31f331764"]
+            }, {"id": "53f2a5a9-40e5-4ae9-9b82-3454c857aaac", "text": "6", "type": "response", "parent_id": "48b557b9-2702-4448-b972-3d862d083921", "children_ids": ["d3b4f80f-5dd2-426e-980f-22c31f331764"]}, {
+                "id": "ba25d38a-6a2f-4e0b-8fff-1deb725dda91",
+                "text": "12",
+                "type": "response",
+                "parent_id": "57ecba0e-70b7-4f90-bda4-c8c8ae635dfa",
+                "children_ids": ["c01145df-0327-4cd5-a838-5c7eb80ab68b", "0e285614-a2ba-4a18-876c-23931d5232f3", "1fa27f0e-da2a-4d03-a15c-a69242613487", "d5dc9696-09c5-4084-975e-a94254980154"]
+            }, {"id": "1c4df1b3-8450-419e-bbe4-a2ead789c0d9", "text": "7", "type": "response", "parent_id": "4133e0a7-cf67-4e70-bb0e-94e44b65375a", "children_ids": ["57ecba0e-70b7-4f90-bda4-c8c8ae635dfa"]}, {
+                "id": "60b66c1f-5d43-4be2-8b36-38ce57637530",
+                "text": "8",
+                "type": "response",
+                "parent_id": "4133e0a7-cf67-4e70-bb0e-94e44b65375a",
+                "children_ids": ["57ecba0e-70b7-4f90-bda4-c8c8ae635dfa", "2dacd49c-6094-4a9c-ae4b-797fa0dfbb12", "49ac887f-36d4-4290-9fde-c465cb0b0b11"]
+            }, {"id": "dde69151-284e-4aca-8c6f-1e6702f5f506", "text": "1", "type": "response", "parent_id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a", "children_ids": ["48b557b9-2702-4448-b972-3d862d083921", "4133e0a7-cf67-4e70-bb0e-94e44b65375a"]}, {
+                "id": "0498f5f1-cfb7-4b3d-9370-4f3450448b54",
+                "text": "2",
+                "type": "response",
+                "parent_id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a",
+                "children_ids": ["4133e0a7-cf67-4e70-bb0e-94e44b65375a", "48b557b9-2702-4448-b972-3d862d083921"]
+            }, {"id": "15e2fdf1-fe51-4637-98f6-b25bb911e84c", "text": "3", "type": "response", "parent_id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a", "children_ids": ["d3b4f80f-5dd2-426e-980f-22c31f331764"]}]
+        }, "character": "patrick", "qualities": ["a", "b"]
     };
     new ConversationEditor(fakeData);
 </script>

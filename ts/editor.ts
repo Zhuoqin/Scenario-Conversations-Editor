@@ -1,5 +1,4 @@
 import * as d3 from "d3";
-
 import nunjucks = require('nunjucks');
 import uuid = require("uuid");
 
@@ -7,15 +6,15 @@ declare let window: any;
 declare let $: any;
 
 export class ConversationEditor {
-    private config: any;
-    public static character: string;  // note: this is able to be configurable
-    private revisionData: any;
+    private readonly config: any;
     private readonly $canvas;
     private readonly $container;
+    private revisionData: any;
     private svgContainer: any;
     private $openModalBtn: any;
     private $modalContainer: any;
     private $svgContainer: JQuery<HTMLElement>;
+    public static character: string;  // note: this is able to be configurable
 
     private static $responseTemplate;
     private static $conversationTemplate;
@@ -36,6 +35,7 @@ export class ConversationEditor {
     private connectorLines: Map<string, RelationshipLine>; // line that has Map<id, Relationship>
     private lineGroup: any;
     private iterationMaxDepth: number;
+    private static CIRCLE_RADIUS = 0.3;
     private static CONVERSATION_WIDTH = 300;
     private static CONVERSATION_HEIGHT = 230;
     private static RESPONSE_HEIGHT = 165;
@@ -45,6 +45,8 @@ export class ConversationEditor {
     // line config
     private $relationship_config: JQuery<HTMLElement>;
     private editingRelationship: RelationshipLine;
+    private dThreeLineFunction = d3.line()
+        .curve(d3.curveCardinal);
 
     // guide
     private $guideTipsBlock: JQuery<HTMLElement>;
@@ -54,11 +56,12 @@ export class ConversationEditor {
         'Add responses, and outcomes to those responses.',
         'Nice, you’ve added an outcome!  You can hover over the connector for more options.',
         'Weight influences the likelihood that this outcome is used in a multiple outcome situation.  Points can be negative.',
+        'Press "Ctrl" & scroll mouse to control, double click to zoom in.'
     ];
 
     // zoom
-    private $canvasMask: JQuery<HTMLElement>;
     private zoomed: boolean;
+    private $canvasMask: JQuery<HTMLElement>;
 
     constructor(config: any) {
         this.config = config;
@@ -71,7 +74,7 @@ export class ConversationEditor {
         this.$guideTipsBlock = this.$modalContainer.find('.guide-bar');
         this.$guideTipsText = this.$guideTipsBlock.children('.guide-text');
         this.$behaviorsBlock = this.$modalContainer.find('.behavior-wrap');
-        this.$relationship_config = this.$modalContainer.find('.relationship_config_window');
+        this.$relationship_config = $('.relationship_config_window').eq(0);
         this.$finishBtn = $('#conversation_drawer_finish');
         // zoom part
         this.$canvasMask = $('#canvas-mask');
@@ -92,19 +95,16 @@ export class ConversationEditor {
         this.buildMapList();
         this.setupCanvasUIDraggableBehaviours();
         this.setupCanvasUIZoomableBehaviours();
-
-        // draw lines
-        this.drawSvgConnectorLinesUI();
-        this.showGuideText(0);
     }
 
-    private dThreeLineFunction = d3.line()
-        .curve(d3.curveCardinal);
-
+    /**
+     * set up the events listeners
+     */
     private setupEvents(): void {
         let isBeforeClicked = false;
         let isAfterClicked = false;
 
+        // container
         this.$container.on('click', '.add-response-btn', (e) => {
             e.preventDefault();
             const $target = $(e.target);
@@ -124,7 +124,7 @@ export class ConversationEditor {
             const $currentConversation = $target.closest('.conversation_template__js');
             let currentResponse = this.responses.get($currentResponse.data('id'));
             if (currentResponse.hasChildren()) {
-                window.Lemonade.alert({message: "This response has sub-conversations, you need to remove them before deleting."});
+                alert("This response has sub-conversations, you need to remove them before deleting.");
                 return;
             }
             // UI related to elements
@@ -133,6 +133,8 @@ export class ConversationEditor {
             this.responseChangesData('remove', $currentConversation.data('id'), $currentResponse.data('id'));
             // affect related lines data
             this.updateRelationshipOnRemoval($currentResponse.data('id'));
+            // trigger canvas adjust
+            $('.tidy-conversation-btn').trigger('click');
         });
 
         this.$container.on('click', '.add-outcome-btn', (e) => {
@@ -143,16 +145,31 @@ export class ConversationEditor {
             this.conversationChangesUI('add', newCreatedConversation.getUuid());
             this.addSvgConnectorLinesData(newCreatedConversation.getUuid(), $currentResponse.data('id'));
             this.drawSvgConnectorLinesUI();
+            // clean error if it has
+            $currentResponse.removeClass('error');
         });
 
         this.$container.on('keyup', '.response-text textarea', (e) => {
-            e.preventDefault();
             const $target = $(e.target);
             const text = $target.val().toString().trim();
             const $currentResponse = $target.closest('.response_template__js');
             const $currentConversation = $target.closest('.conversation_template__js');
             // Data related to elements' IDs
             this.responseChangesData('update', $currentConversation.data('id'), $currentResponse.data('id'), text);
+        });
+
+        this.$container.on('keydown', '.response-text textarea', (e) => {
+            const $target = $(e.target);
+
+            if (e.keyCode === 13) {
+                e.preventDefault();
+                // enter key press auto make it skip to next response text field
+                let $nextResponse = $target.closest('.response_template__js').next();
+                if ($nextResponse && $nextResponse.length) {
+                    let value = $nextResponse.find('textarea').val();
+                    $nextResponse.find('textarea').val('').val(value).focus();
+                }
+            }
         });
 
         this.$container.on('click', '.connector', (e) => {
@@ -174,9 +191,13 @@ export class ConversationEditor {
                 this.showGuideText(2);
                 // remove active box after connected
                 $('.connector').removeClass('active');
+                // remove error if error class
+                boxBefore.closest('.conversation_template__js').removeClass('error');
+                boxAfter.closest('.response_template__js').removeClass('error');
             }
         });
 
+        // canvas
         this.$canvas.on('click', '.svg_container .line', (e) => {
             const $target = $(e.target);
             this.$relationship_config.css({
@@ -189,11 +210,111 @@ export class ConversationEditor {
             let id = $target.attr('id');
             this.editingRelationship = this.connectorLines.get(id);
             this.renderRelationshipConfig();
-            this.$relationship_config.velocity('transition.bounceIn');
-            $('#relationship_config_form').validate();
+            this.$relationship_config.fadeIn();
+            // $('#relationship_config_form').validate();
             this.showGuideText(3);
         });
 
+        this.$canvas.on('click', '.conversation_context_container .conversation_context', (e) => {
+            $(e.target).velocity('hide', () => {
+                $(e.target).siblings('.conversation_context_input').velocity('show', function () {
+                    $(this).focus();
+                }, 'fast');
+            }, 'fast');
+        });
+
+        this.$canvas.on('input', '.conversation_context_container .conversation_context_input', (e) => {
+            let id = $(e.target).closest('.conversation_template__js').data('id');
+            let text = $(e.target).val().toString().trim();
+            this.conversationChangesUI('update', id, text);
+            this.conversationChangesData('update', id, text);
+        });
+
+        this.$canvas.on('keypress', '.conversation_context_container .conversation_context_input', (event) => {
+            if (event.which === 13) {
+                $(event.target).velocity('hide', () => {
+                    $(event.target).siblings('.conversation_context').velocity('show', 'fast');
+                }, 'fast');
+            }
+        });
+
+        this.$canvas.on('click', '.trash-conversation-btn', (e) => {
+            let conversationId = $(e.target).closest('.conversation_template__js').data('id');
+            let r = confirm("Are you sure to remove this conversation?");
+            if (r == true) {
+                this.conversationChangesData('remove', conversationId, '', (removed: boolean) => {
+                    if (removed) {
+                        this.conversationChangesUI('remove', conversationId);
+                        // trigger canvas adjust
+                        $('.tidy-conversation-btn').trigger('click');
+                    }
+                });
+            }
+        });
+
+        this.$canvas.on('click', (e) => {
+            const $target = $(e.target);
+            // close editing textarea
+            if (!$target.is('textarea.conversation_context_input')) {
+                $("textarea.conversation_context_input:visible").each((index, el) => {
+                    $(el).velocity('hide', () => {
+                        $(el).siblings('.conversation_context').velocity('show', 'fast');
+                    }, 'fast');
+                });
+            }
+
+            // unselect path
+            if (!$target.is('path')) {
+                this.triggerRelationshipConfigForm();
+            }
+        });
+
+        // modal
+        this.$modalContainer.on('click', '.add-conversation-point-btn', (e) => {
+            e.preventDefault();
+            // prevent ui change when the scale is not normal
+            if (this.zoomed) {
+                $('#zoom-reset').trigger('click');
+            }
+            if (this.hasIndependentConversations()) {
+                return;
+            }
+            let newCreatedConversation = this.conversationChangesData('add');
+            this.conversationChangesUI('add', newCreatedConversation.getUuid());
+        });
+
+        this.$modalContainer.on('click', '.tidy-conversation-btn', (e) => {
+            e.preventDefault();
+            // prevent ui change when the scale is not normal
+            if (this.zoomed) {
+                $('#zoom-reset').trigger('click');
+            }
+            if (this.hasIndependentConversations()) {
+                return;
+            }
+            // close relationship config
+            this.triggerRelationshipConfigForm();
+            // reset stacks
+            this.iterationMaxDepth = 0;
+            this.drawConversations = new Set<string>();
+            this.conversationStack = new Map<number, number>();
+            this.responseStack = new Map<number, number>();
+            this.$svgContainer.siblings().not(this.$canvasMask).remove();
+            this.recursiveDrawConversations(this.rootConversation);
+            this.redrawSvgConnectorLines();
+            this.adjustCanvasSize();
+            this.setupCanvasUIDraggableBehaviours();
+        });
+
+        // behaviors
+        this.$behaviorsBlock.on('click', '#zoom-reset', (e) => {
+            e.preventDefault();
+            this.resetZoomView();
+            // reset guide text
+            this.showGuideText();
+        });
+
+        // relationship popup
         this.$relationship_config.on('submit', 'form', (e) => {
             e.preventDefault();
             let newWeight = Number(this.$relationship_config.find('input[name="weight"]').val());
@@ -216,112 +337,32 @@ export class ConversationEditor {
             }
         });
 
-        this.$canvas.on('click', '.conversation_context_container .conversation_context', (e) => {
-            $(e.target).velocity('transition.fadeOut', () => {
-                $(e.target).siblings('.conversation_context_input').velocity('transition.fadeIn', function () {
-                    $(this).focus();
-                }, 'fast');
-            }, 'fast');
-        });
-
-        this.$canvas.on('input', '.conversation_context_container .conversation_context_input', (e) => {
-            let id = $(e.target).closest('.conversation_template__js').data('id');
-            let text = $(e.target).val().toString().trim();
-            this.conversationChangesUI('update', id, text);
-            this.conversationChangesData('update', id, text);
-        });
-
-        this.$canvas.on('keypress', '.conversation_context_container .conversation_context_input', (event) => {
-            if (event.which === 13) {
-                $(event.target).velocity('transition.fadeOut', () => {
-                    $(event.target).siblings('.conversation_context').velocity('transition.fadeIn', 'fast');
-                }, 'fast');
-            }
-        });
-
-        this.$canvas.on('click', '.trash-conversation-btn', (e) => {
-            let conversationId = $(e.target).closest('.conversation_template__js').data('id');
-            window.Lemonade.confirm({
-                message: "Are you sure to remove this conversation?",
-                okButton: "Remove",
-                cancelButton: "Cancel"
-            }, (confirm) => {
-                if (confirm) {
-                    this.conversationChangesData('remove', conversationId, '', (removed: boolean) => {
-                        if (removed) {
-                            this.conversationChangesUI('remove', conversationId);
-                        }
-                    });
-                }
-            });
-        });
-
-        this.$modalContainer.on('click', '.add-conversation-point-btn', (e) => {
-            e.preventDefault();
-            // prevent ui change when the scale is not normal
-            if (this.zoomed) {
-                return;
-            }
-            let newCreatedConversation = this.conversationChangesData('add');
-            this.conversationChangesUI('add', newCreatedConversation.getUuid());
-        });
-
-        this.$modalContainer.on('click', '.tidy-conversation-btn', (e) => {
-            e.preventDefault();
-            // prevent ui change when the scale is not normal
-            if (this.zoomed) {
-                return;
-            }
-            // close relationship config
-            this.triggerRelationshipConfigForm();
-            // reset stacks
-            this.iterationMaxDepth = 0;
-            this.drawConversations = new Set<string>();
-            this.conversationStack = new Map<number, number>();
-            this.responseStack = new Map<number, number>();
-            this.$svgContainer.siblings().not(this.$canvasMask).remove();
-            this.iterativeDrawConversations(this.rootConversation);
-            this.redrawSvgConnectorLines();
-            this.adjustCanvasSize();
-            this.setupCanvasUIDraggableBehaviours();
-        });
-
-        this.$behaviorsBlock.on('click', '#zoom-reset', (e) => {
-            e.preventDefault();
-            this.resetZoomView();
-        });
-
-        this.$canvas.on('click', (e) => {
-            const $target = $(e.target);
-            // close editing textarea
-            if (!$target.is('textarea.conversation_context_input')) {
-                $("textarea.conversation_context_input:visible").each((index, el) => {
-                    $(el).velocity('transition.fadeOut', () => {
-                        $(el).siblings('.conversation_context').velocity('transition.fadeIn', 'fast');
-                    }, 'fast');
-                });
-            }
-
-            // unselect path
-            if (!$target.is('path')) {
-                this.triggerRelationshipConfigForm();
-            }
-        });
-
-        $('#scenario_draw_modal_btn').on('click', () => {
-            this.$modalContainer.modal('show');
-        });
-
-        this.$modalContainer.on("shown.bs.modal", () => {
-            this.drawSvgConnectorLinesUI();
-            this.showGuideText(0);
-        });
-
         this.$finishBtn.on('click', () => {
+            if (this.hasIndependentConversations()) {
+                return;
+            }
+            if (this.hasIndependentResponses()) {
+                return;
+            }
             this.triggerRelationshipConfigForm();
             this.$modalContainer.modal('hide');
             this.compileRevisionData();
         });
+
+        // outer modal triggers
+        $('#scenario_draw_modal_btn').on('click', () => {
+            this.$modalContainer.modal('show');
+        });
+    }
+
+    /**
+     * calculate a position to scroll to make element inside of centre screen
+     */
+    private static calculateScrollPosition($el): any {
+        let position = $el.position();
+        let windowWidth = window.innerWidth - ConversationEditor.CONVERSATION_WIDTH;
+        let windowHeight = window.innerHeight - ConversationEditor.CONVERSATION_HEIGHT;
+        return [position.left - windowWidth / 2, position.top - windowHeight / 2];
     }
 
     /**
@@ -329,9 +370,13 @@ export class ConversationEditor {
      */
     private resetZoomView() {
         this.zoomed = false;
-        this.$canvasMask.addClass('hidden');
-        this.$canvas.css('transform', 'none');
+        // reset d3 zoom storage
+        let zoom = d3.zoom().on("zoom", this.canvasZoomed);
+        zoom.transform(d3.select('#scenario_drawer_container'), d3.zoomIdentity);
+        // show zoom scale text
         this.$behaviorsBlock.find('#zoom-percentage').text('100');
+        // hide canvas mask
+        this.$canvasMask.addClass('hidden');
     }
 
     /**
@@ -348,35 +393,50 @@ export class ConversationEditor {
      * revision data is from server, we sanitize it into our objects type
      */
     private sanitizeConfigurationData() {
-        let {scenarioData} = this.config;
-        let {relationships} = scenarioData;
-        let {rootConversation} = scenarioData;
-        if (scenarioData && relationships && rootConversation) {
-            this.rootConversation = this.iterativeBuildConversations(rootConversation || {}); // at least build root
-            this.buildRelationships(relationships);
+        if (!this.config) {
+            return;
         }
+        let {scenarioData} = this.config;
+        let {questions} = this.config;
+        // if created new, auto build an empty root conversation for it
+        if (!scenarioData && !questions) {
+            this.rootConversation = new Conversation();
+            this.conversations.set(this.rootConversation.getUuid(), this.rootConversation);
+            return;
+        }
+
+        let {relationships} = scenarioData;
+        if (!relationships) {
+            return;
+        }
+
+        let {conversations} = scenarioData;
+        let {responses} = scenarioData;
+        this.iterativeBuildConversations(conversations, responses);
+        this.buildRelationships(relationships);
     }
 
     /**
      * load relationship data from config data - assign weight/points
      */
     private buildRelationships(relationships) {
-        if (!relationships) {
+        if (!relationships || !relationships.length) {
             return;
         }
         relationships.forEach((relationshipObj: any) => {
             const combID: string = relationshipObj.id;
-            let conversation = this.getConversationById(relationshipObj.conversation.id);
-            let response = this.getResponseById(relationshipObj.response.id);
+            let conversation = this.getConversationById(relationshipObj['conversation_id']);
+            let response = this.getResponseById(relationshipObj['response_id']);
             let newRelationship = new RelationshipLine(combID, conversation, response, relationshipObj.weight, relationshipObj.points);
             this.connectorLines.set(combID, newRelationship);
         });
     }
 
     /**
-     * iteratively build conversation object based on the config json data
+     * Build Conversation Way One:  O(log n)
+     * Recursively build conversation object based on the config json data
      */
-    private iterativeBuildConversations(conversationObj: any): Conversation {
+    private recursiveBuildConversations(conversationObj: any): Conversation {
         let conversationID = conversationObj['id'] || '';
         if (this.conversations.has(conversationID)) {
             return this.conversations.get(conversationID);
@@ -395,7 +455,7 @@ export class ConversationEditor {
                 response.setParent(conversation);
                 if (responseObj.hasChildren) {
                     responseObj['conversation_children'].forEach((subConversationObj: any) => {
-                        let createdConversation = this.iterativeBuildConversations(subConversationObj);
+                        let createdConversation = this.recursiveBuildConversations(subConversationObj);
                         // add child
                         response.addConversation(createdConversation);
                         // refer parent
@@ -411,25 +471,64 @@ export class ConversationEditor {
     }
 
     /**
+     * Build Conversation Way Two:  O(n^2 * 2)
+     * Recursively loop into conversation object list and build objects.
+     */
+    private iterativeBuildConversations(conversations: any, responses: any) {
+        conversations.forEach((conversationObj) => {
+            let conversationID = conversationObj['id'];
+            let depth = conversationObj['depth'];
+            let conversation = new Conversation(depth);
+            conversation.setUuid(conversationID);
+            conversation.setAssets(conversationObj['context'], conversationObj['expression_name'], conversationObj['expression_url']);
+            if (depth === 0) {
+                this.rootConversation = conversation;
+            }
+            this.conversations.set(conversation.getUuid(), conversation);
+        });
+
+        responses.forEach((responseObj) => {
+            // after all conversations created, we should be able to get one of them by id
+            let responseID = responseObj['id'];
+            let conversationParentID = responseObj['parent_id'];
+            let conversationParent = this.conversations.get(conversationParentID);
+            let response = new Response(conversationParent, responseObj['text']);
+            response.setUuid(responseID);
+
+            // link conversation children
+            responseObj['children_ids'].forEach((conversationID: any) => {
+                let conversationChild = this.conversations.get(conversationID);
+                conversationChild.addParentResponse(response);
+                response.addConversation(conversationChild);
+                // update child conversation
+                this.conversations.set(conversationID, conversationChild);
+            });
+
+            // update parent conversation
+            conversationParent.addResponse(response);
+            this.conversations.set(conversationParentID, conversationParent);
+
+            // update response itself
+            response.setParent(conversationParent);
+            this.responses.set(responseID, response);
+        });
+    }
+
+    /**
      * First, we have data in ts version then we need to compile them into revision required json format to store
      */
     private compileRevisionData() {
         // default
         let relationships = [];
-        let conversationsList = [];
         // loop
         this.connectorLines.forEach((relationship: RelationshipLine) => {
             relationships.push(relationship.toJSON());
         });
-        this.conversations.forEach((conversation: Conversation) => {
-            conversationsList.push(conversation.deepParse());
-        });
         this.revisionData = {
-            rootConversation: this.rootConversation.deepParse(),
             relationships: relationships,
-            // conversationsList: conversationsList
+            conversations: Array.from(this.conversations.values()).map(conversation => conversation.toJSON()),
+            responses: Array.from(this.responses.values()).map(response => response.toJSON()),
         };
-        console.log(this.revisionData);
     }
 
     /**
@@ -460,36 +559,31 @@ export class ConversationEditor {
         let conversation = this.editingRelationship.getBefore();
         let hasMultiParent = conversation.getParents().size > 1;
         if (!hasMultiParent) {
-            window.Lemonade.alert({message: "You need to connect this conversation to another response before deleting this relationship."});
+            alert("You need to connect this conversation to another response before deleting this relationship.");
             return;
         }
 
-        window.Lemonade.confirm({
-            message: "Are you sure to remove this relationship?",
-            okButton: "Remove",
-            cancelButton: "Cancel"
-        }, (confirm) => {
-            if (confirm) {
-                this.connectorLines.delete(this.editingRelationship.getId());
-                response.removeConversation(conversation);
-                conversation.removeParentResponse(response);
-                // adjust depth
-                conversation.setDepth(this.retrieveDepthFromParent(conversation));
-                // reset form
-                this.editingRelationship = null;
-                this.$relationship_config.css({
-                    'z-index': -1,
-                    'display': 'none'
-                });
-            }
-            this.redrawSvgConnectorLines();
-        });
+        let r = confirm("Are you sure to remove this relationship?");
+        if (r == true) {
+            this.connectorLines.delete(this.editingRelationship.getId());
+            response.removeConversation(conversation);
+            conversation.removeParentResponse(response);
+            // adjust depth
+            conversation.setDepth(ConversationEditor.retrieveDepthFromParent(conversation));
+            // reset form
+            this.editingRelationship = null;
+            this.$relationship_config.css({
+                'z-index': -1,
+                'display': 'none'
+            });
+        }
+        this.redrawSvgConnectorLines();
     }
 
     /**
      * parent conversation's depth are known, use parent's to calculate sub conversation's depth
      */
-    private retrieveDepthFromParent(conversation: Conversation): number {
+    private static retrieveDepthFromParent(conversation: Conversation): number {
         let availableParent: Response = Array.from(conversation.getParents()).shift();
         let parentDepth = availableParent.getParent().getDepth();
         return parentDepth + 1;
@@ -525,7 +619,7 @@ export class ConversationEditor {
             .attr("d", (data, index, line) => {
                 let lineData = this.fetchSingleLineData(data);
                 if (lineData && lineData.length) {
-                    return this.dThreeLineFunction(this.compileCurveLineData(lineData));
+                    return this.dThreeLineFunction(ConversationEditor.compileCurveLineData(lineData));
                 }
             })
             .attr("id", (data, index, line) => {
@@ -541,14 +635,14 @@ export class ConversationEditor {
         let beforeID = relationship.getBefore().getUuid();
         const boxBefore = $(`.connector.before[data-id="${beforeID}"]`);
         const boxAfter = $(`.connector.after[data-id=${afterID}]`);
-        return this.calculateConnectorLineData(boxBefore, boxAfter);
+        return ConversationEditor.calculateConnectorLineData(boxBefore, boxAfter);
     }
 
     /**
      * line data generator that separate one line to three, e.g [[x1,y1],[x2,y2]] to [[x1,y1],[x2,y2],[x3,y3],[x3,y3],[x4,y4]];
      * @param lineData
      */
-    private compileCurveLineData(lineData: [number, number][]): [number, number][] {
+    private static compileCurveLineData(lineData: [number, number][]): [number, number][] {
         let posStart: [number, number] = lineData[0];
         let posEnd: [number, number] = lineData[1];
 
@@ -596,17 +690,8 @@ export class ConversationEditor {
     }
 
     /**
-     * remove a group array of conversations
-     */
-    private removeGroupConversations(conversations: Conversation[]) {
-        conversations.forEach((conversation: Conversation) => {
-            this.conversations.delete(conversation.getUuid());
-        });
-    }
-
-    /**
      * remove relationships once a response/conversation has been removed
-     * @param id
+     * @param removalID: string
      */
     private updateRelationshipOnRemoval(removalID: string) {
         this.connectorLines.forEach((relationship: RelationshipLine, combID: string) => {
@@ -622,7 +707,7 @@ export class ConversationEditor {
      * @param boxBefore
      * @param boxAfter
      */
-    private calculateConnectorLineData(boxBefore: JQuery<HTMLElement>, boxAfter: JQuery<HTMLElement>): [number, number][] {
+    private static calculateConnectorLineData(boxBefore: JQuery<HTMLElement>, boxAfter: JQuery<HTMLElement>): [number, number][] {
         if (!boxBefore.length || !boxAfter.length) {
             return [];
         }
@@ -701,7 +786,7 @@ export class ConversationEditor {
      * @param step
      * @param type
      */
-    private showGuideText(step: number, type: string = 'info'): void {
+    private showGuideText(step: number = 0, type: string = 'info'): void {
         let text = this.GUIDE_STEPS[step] || '';
         let color = '#0fe67a'; // default guide color
 
@@ -718,7 +803,7 @@ export class ConversationEditor {
         }
 
         this.$guideTipsBlock.css('background-color', color);
-        this.$guideTipsText.text(text).velocity('callout.pluse');
+        this.$guideTipsText.text(text);
     }
 
     /**
@@ -732,10 +817,21 @@ export class ConversationEditor {
         let currentX;
         let currentY;
         let position;
+        let canvasWidth = this.$canvas.width();
+        let canvasHeight = this.$canvas.height();
 
         d3.selectAll('.conversation_template__js').call(d3.drag()
             .on('drag', function () {
                 let sourceEvent = d3.event.sourceEvent;
+                // adjust canvas if exceed
+                let extendWidth = $(this).position().left + ConversationEditor.CONVERSATION_WIDTH;
+                let extendHeight = $(this).position().top + ConversationEditor.CONVERSATION_HEIGHT;
+                if (extendWidth > canvasWidth) {
+                    self.$canvas.width(Math.max(canvasWidth, extendWidth));
+                }
+                if (extendHeight > canvasHeight) {
+                    self.$canvas.height(Math.max(canvasWidth, extendHeight));
+                }
                 currentX = sourceEvent.clientX - initialX;
                 currentY = sourceEvent.clientY - initialY;
                 $(this).css({left: position.left + currentX, top: position.top + currentY});
@@ -762,6 +858,9 @@ export class ConversationEditor {
         );
     }
 
+    /**
+     * canvas zoomed common arrow function for d3 zoom
+     */
     private canvasZoomed = () => {
         let transformData = d3.event.transform;
         let scale = transformData.k;
@@ -773,6 +872,11 @@ export class ConversationEditor {
         this.$canvasMask.toggleClass('hidden', scale === 1);
         this.$canvas.css({transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`});
         this.$behaviorsBlock.find('#zoom-percentage').text(Math.floor(scale * 100));
+        if (scale === 1) {
+            this.showGuideText();
+        } else {
+            this.showGuideText(4);
+        }
     };
 
     /**
@@ -791,6 +895,9 @@ export class ConversationEditor {
             .on("zoom", this.canvasZoomed));
     }
 
+    /**
+     * General method to initialize maps and get ready for data create and draw
+     */
     private buildMapList() {
         this.iterationMaxDepth = 0;
         this.conversations = new Map<string, Conversation>();
@@ -802,15 +909,16 @@ export class ConversationEditor {
         this.lineGroup = this.svgContainer.append("g").attr("class", "lineGroup");
 
         this.sanitizeConfigurationData();
-        this.iterativeDrawConversations(this.rootConversation);
+        this.recursiveDrawConversations(this.rootConversation);
         this.adjustCanvasSize();
+        this.drawSvgConnectorLinesUI();
     }
 
     /**
-     * Iteratively loop into deepest conversation to draw, the root conversation doesn't have parent response
+     * Recursively loop into deepest conversation to draw, the root conversation doesn't have parent response
      * @param conversation
      */
-    private iterativeDrawConversations(conversation: Conversation): void {
+    private recursiveDrawConversations(conversation: Conversation): void {
         // multiple response may have one conversation to connect but responses only belongs one conversation
         // avoid duplicated draw
         if (this.drawConversations.has(conversation.getUuid())) {
@@ -823,11 +931,15 @@ export class ConversationEditor {
         this.iterationMaxDepth = Math.max(this.iterationMaxDepth, conversation.getDepth());
         conversation.getResponses().forEach((response: Response) => {
             response.getConversations().forEach((conversation: Conversation) => {
-                this.iterativeDrawConversations(conversation);
+                this.recursiveDrawConversations(conversation);
             })
         });
     }
 
+    /**
+     * Automatically adjust canvas size with the content change
+     * e.g it can be used for drag to extend canvas size
+     */
     private adjustCanvasSize() {
         const conversationStacks = Math.max(...Array.from(this.conversationStack.values())) + 1;
         const responseStacks = Math.max(...Array.from(this.responseStack.values())) + 1;
@@ -840,6 +952,11 @@ export class ConversationEditor {
         this.$canvas.width(`${radius}px`);
     }
 
+    /**
+     * This method is used to draw a single conversation by passing conversation object in
+     * it will automatically calculate the position depends on its depth and responses stacks
+     * @param conversation
+     */
     private drawSingleConversation(conversation: Conversation) {
         let position = this.calculateConversationPosition(conversation);
         // The radius
@@ -861,9 +978,10 @@ export class ConversationEditor {
         // The stack of conversations width: x - depth
         let depth = conversation.getDepth();
         if (depth < 0) {
+            const addPointsBtnPosition = $('.add-conversation-point-btn').offset();
             return {
-                left: $('.add-conversation-point-btn').offset().left + this.$canvas.parent().prop('scrollLeft'),
-                top: $('.add-conversation-point-btn').offset().top - ConversationEditor.CONVERSATION_HEIGHT - 40 + this.$canvas.parent().prop('scrollTop')
+                left: addPointsBtnPosition.left + this.$canvas.parent().prop('scrollLeft'),
+                top: addPointsBtnPosition.top - ConversationEditor.CONVERSATION_HEIGHT - 40 + this.$canvas.parent().prop('scrollTop')
             };
         }
         // The stack of conversations height: y - stack
@@ -883,31 +1001,35 @@ export class ConversationEditor {
         return position;
     }
 
-    private getResponseTemplate(response: Response): JQuery<HTMLElement> {
-        const newTemplate = ConversationEditor.$responseTemplate.clone();
-        newTemplate.attr('data-id', response.getUuid());
-        newTemplate.find('.connector').attr('data-id', response.getUuid());
-        return newTemplate;
-    }
-
-    private getConversationTemplate(data: any): JQuery<HTMLElement> {
-        return ConversationEditor.$conversationTemplate.clone();
-    }
-
+    /**
+     * conversation getter - find conversation by ID
+     * @param id
+     */
     private getConversationById(id: string): Conversation {
         return this.conversations.get(id);
     }
 
+    /**
+     * response getter - find response by ID
+     * @param id
+     */
     private getResponseById(id: string): Response {
         return this.responses.get(id);
     }
 
+    /**
+     * Deal with response UI changes
+     * @param behavior
+     * @param $conversation
+     * @param $response
+     * @param response
+     */
     private responseChangesUI(behavior: string, $conversation: JQuery<HTMLElement>, $response?: JQuery<HTMLElement>, response?: Response) {
         const $listContainer = $conversation.children('.responses_list__js');
 
         switch (behavior) {
             case 'add':
-                this.getResponseTemplate(response).appendTo($listContainer);
+                ConversationEditor.getResponseTemplate(response).appendTo($listContainer);
                 break;
             case 'remove':
                 // remove response by conversation & response id
@@ -920,6 +1042,13 @@ export class ConversationEditor {
         }
     }
 
+    /**
+     * Deal with response Data changes
+     * @param behavior
+     * @param conversationID
+     * @param responseID
+     * @param value
+     */
     private responseChangesData(behavior: string, conversationID: string, responseID?: string, value?: string): Response {
         let currentConversation = this.conversations.get(conversationID);
         let currentResponse = responseID ? this.responses.get(responseID) : null;
@@ -946,6 +1075,12 @@ export class ConversationEditor {
         return currentResponse;
     }
 
+    /**
+     * Deal with conversation UI changes
+     * @param behavior
+     * @param conversationID
+     * @param value
+     */
     private conversationChangesUI(behavior: string, conversationID: string, value?: string): Conversation {
         let currentConversation = this.conversations.get(conversationID);
         let $conversation = $(`.conversation_template__js[data-id="${conversationID}"]`);
@@ -971,6 +1106,13 @@ export class ConversationEditor {
         return currentConversation;
     }
 
+    /**
+     * Deal with conversation Data changes
+     * @param behavior
+     * @param conversationID
+     * @param value
+     * @param cb
+     */
     private conversationChangesData(behavior: string, conversationID?: string, value?: string, cb?: any): Conversation {
         let currentConversation;
         if (conversationID) {
@@ -994,7 +1136,7 @@ export class ConversationEditor {
                     }
                 });
                 if (hasSubConversations) {
-                    window.Lemonade.alert({message: "This conversation has sub-conversations, please remove them first."});
+                    alert("This conversation has sub-conversations, please remove them first.");
                     if (typeof cb === 'function') {
                         // is deleted or not
                         cb(false);
@@ -1017,6 +1159,34 @@ export class ConversationEditor {
     }
 
     /**
+     * Common character setter
+     * @param character
+     */
+    public setCharacter(character: string) {
+        ConversationEditor.character = character;
+        // update/refresh all existing characters, if we need single characters edit, this need to be modified
+        $('.character-avatar').attr({'src': `/assets/scenario/images/characters/${character}/start.png`, 'alt': character});
+        this.conversations.forEach((conversation: Conversation) => {
+            conversation.setExpressionName(character).setExpressionUrl(character);
+        });
+    }
+
+    /**
+     * Templates generator
+     */
+    private static getResponseTemplate(response: Response): JQuery<HTMLElement> {
+        const newTemplate = ConversationEditor.$responseTemplate.clone();
+        newTemplate.attr('data-id', response.getUuid());
+        newTemplate.find('.connector').attr('data-id', response.getUuid());
+        return newTemplate;
+    }
+
+    private static getConversationTemplate(data: any): JQuery<HTMLElement> {
+        return ConversationEditor.$conversationTemplate.clone();
+    }
+
+    /**
+     * VALIDATOR/GUARD
      * after check per response has sub conversations, execute conversation removal and update affected stuff
      */
     private executeConversationRemoval(affectedChildrenResponses, currentConversation) {
@@ -1031,13 +1201,53 @@ export class ConversationEditor {
         this.conversations.delete(currentConversation.getUuid());
     }
 
-    public setCharacter(character: string) {
-        ConversationEditor.character = character;
-        // update/refresh all existing characters, if we need single characters edit, this need to be modified
-        $('.character-avatar').attr({'src': `/assets/scenario/images/characters/${character}/start.png`, 'alt': character});
-        this.conversations.forEach((conversation: Conversation) => {
-            conversation.setExpressionName(character).setExpressionUrl(character);
-        });
+    /**
+     * Check independent conversations,
+     * if some of them aren't belongs to any parent response, show the warning that it will be lost
+     */
+    private hasIndependentConversations(): boolean {
+        if (!this.conversations.size) {
+            return false;
+        }
+        let independentConversation = Array.from(this.conversations.values()).find(conversation => conversation.getDepth() === -1);
+        if (independentConversation) {
+            // show alert
+            alert("To continue, please make sure each conversation belongs to at least one response block.");
+            // mark red border
+            if (typeof independentConversation === 'object') {
+                const $conversation = $(`.conversation_templates.conversation_template__js[data-id="${independentConversation.getUuid()}"]`);
+                $conversation.addClass('error');
+                let scrollToPosition = ConversationEditor.calculateScrollPosition($conversation);
+                this.$canvas.parent().get(0).scrollTo(scrollToPosition[0], scrollToPosition[1]);
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check independent responses,
+     * if some of them don't have any sub conversations, show the warning and mark the error responses
+     */
+    private hasIndependentResponses(): boolean {
+        if (!this.responses.size) {
+            return false;
+        }
+        let independentResponses = Array.from(this.responses.values()).filter(response => response.getConversations().size === 0);
+        console.log(independentResponses);
+        if (independentResponses.length) {
+            // show alert
+            alert("Please make sure each response connect at least one sub conversation.");
+            independentResponses.forEach((response: Response) => {
+                const $response = $(`.conversation_templates.response_template__js[data-id="${response.getUuid()}"]`);
+                $response.addClass('error');
+            });
+            // mark red border
+            return true;
+        }
+
+        return false;
     }
 }
 
@@ -1113,6 +1323,14 @@ export class Conversation {
         return this._parents;
     }
 
+    public getParentsJSON(): any {
+        let parentsJSON = [];
+        this._parents.forEach((response: Response) => {
+            parentsJSON.push(response.toJSON());
+        });
+        return parentsJSON;
+    }
+
     public setParents(responseArr: Set<Response>) {
         this._parents = responseArr;
     }
@@ -1132,6 +1350,14 @@ export class Conversation {
         return this._responses;
     }
 
+    public getResponsesJSON(): any {
+        let responsesJSON = [];
+        this._responses.forEach((response: Response) => {
+            responsesJSON.push(response.toJSON());
+        });
+        return responsesJSON;
+    }
+
     public parseResponses(): any {
         let parsedJSON = [];
         this._responses.forEach((response: Response) => {
@@ -1142,6 +1368,10 @@ export class Conversation {
 
     public hasChildren(): boolean {
         return this._responses.size > 0;
+    }
+
+    public hasParents(): boolean {
+        return this._parents.size > 0;
     }
 
     public setResponses(array: Set<Response>) {
@@ -1167,8 +1397,10 @@ export class Conversation {
             context: this._context,
             expression_url: this._expressionUrl,
             expression_name: this._expressionName,
-            responses: this._responses,
-            parents: this._parents,
+            hasParents: this.hasParents(),
+            hasChildren: this.hasChildren(),
+            responses: this.getResponsesJSON(),
+            parents: this.getParentsJSON(),
         }
     }
 
@@ -1239,6 +1471,10 @@ export class Response {
         return parsedJSON;
     }
 
+    public getChildrenIDs(): any {
+        return Array.from(this._children.values()).map(conversation => conversation.getUuid());
+    }
+
     public getConversations(): Set<Conversation> {
         return this._children;
     }
@@ -1261,10 +1497,10 @@ export class Response {
     public toJSON(): any {
         return {
             id: this._uuid,
-            parent: this._parent,
-            children: this._children,
             text: this._text,
-            type: this._type
+            type: this._type,
+            parent_id: this._parent.getUuid(),
+            children_ids: this.getChildrenIDs(),
         }
     }
 
@@ -1343,8 +1579,8 @@ export class RelationshipLine {
             id: this._id,
             weight: this._weight,
             points: this._points,
-            conversation: this._before.toJSON(),
-            response: this._after.toJSON()
+            conversation_id: this._before.getUuid(),
+            response_id: this._after.getUuid()
         }
     }
 }
