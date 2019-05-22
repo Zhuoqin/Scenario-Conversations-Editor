@@ -1,0 +1,32 @@
+{
+  "name": "scenario_conversations_demo",
+  "version": "1.0.0",
+  "description": "Scenario conversation editor",
+  "main": "editor.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/bootstrap": "^4.1.2",
+    "@types/d3": "^5.7.0",
+    "@types/jquery": "^3.2.15",
+    "@types/jquery.validation": "^1.16.6",
+    "@types/nunjucks": "^3.1.0",
+    "@types/uuid": "^3.4.3",
+    "@types/velocity-animate": "^1.2.31",
+    "jquery": "^3.4.1",
+    "lodash": "^4.17.4",
+    "nunjucks": "^3.1.7",
+    "papaparse": "^4.3.6",
+    "ts-loader": "^4.0.0",
+    "typescript": "^2.8.1",
+    "uuid": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/d3": "^5.7.0",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.1"
+  }
+}

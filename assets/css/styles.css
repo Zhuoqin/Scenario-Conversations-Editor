@@ -1,0 +1,475 @@
+#scenario_draw_modal {
+  padding: 0 !important;
+  overflow: hidden; }
+  #scenario_draw_modal h1,
+  #scenario_draw_modal h2,
+  #scenario_draw_modal h3,
+  #scenario_draw_modal h4,
+  #scenario_draw_modal h5,
+  #scenario_draw_modal h6 {
+    margin-top: 0;
+    margin-bottom: 0.65em; }
+  #scenario_draw_modal .btn-outline-primary {
+    background: transparent; }
+    #scenario_draw_modal .btn-outline-primary.btn-outline-primary-white {
+      border-color: #fff;
+      color: #fff; }
+      #scenario_draw_modal .btn-outline-primary.btn-outline-primary-white:hover, #scenario_draw_modal .btn-outline-primary.btn-outline-primary-white:focus {
+        border-color: #5696d6; }
+    #scenario_draw_modal .btn-outline-primary:hover, #scenario_draw_modal .btn-outline-primary:focus {
+      background-color: #5696d6; }
+  #scenario_draw_modal .modal-dialog, #scenario_draw_modal .modal-content {
+    height: 100%;
+    width: 100%;
+    margin: 0; }
+  #scenario_draw_modal .canvas-wrap {
+    height: calc(100% - 70px);
+    padding: 0; }
+  #scenario_draw_modal .content-footer {
+    border-top: 1.5px solid #707070;
+    position: fixed;
+    bottom: 0;
+    height: 70px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    background: #242e42;
+    color: white;
+    width: 100%;
+    padding: 0 15px;
+    -webkit-box-pack: end;
+    -ms-flex-pack: end;
+    justify-content: flex-end; }
+    #scenario_draw_modal .content-footer .zoom-area .zoom-text {
+      display: inline-block;
+      font-size: 16px;
+      font-weight: bold; }
+    #scenario_draw_modal .content-footer .add-conversation-point-btn,
+    #scenario_draw_modal .content-footer .zoom-toggle,
+    #scenario_draw_modal .content-footer .zoom-area {
+      margin-right: 15px; }
+  #scenario_draw_modal .guide-bar {
+    display: none;
+    z-index: 1;
+    position: fixed;
+    bottom: 55px;
+    width: 100%;
+    text-align: center;
+    padding: 10px 20px;
+    background: #0fe67a;
+    -webkit-transition: 0.3s ease-in-out background, color;
+    -o-transition: 0.3s ease-in-out background, color;
+    transition: 0.3s ease-in-out background, color;
+    border: 1.5px solid #000; }
+    #scenario_draw_modal .guide-bar .guide-text {
+      font-size: 16px; }
+  #scenario_draw_modal .behavior-wrap {
+    z-index: 4;
+    position: fixed;
+    bottom: 86px;
+    right: 0;
+    padding: 0 15px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    background: transparent; }
+    #scenario_draw_modal .behavior-wrap .btn.tidy-conversation-btn {
+      color: #5696d6;
+      background: transparent;
+      font-size: 18px;
+      padding: 6px 12px;
+      border: none; }
+      #scenario_draw_modal .behavior-wrap .btn.tidy-conversation-btn:active {
+        -webkit-box-shadow: none;
+        box-shadow: none; }
+  #scenario_draw_modal #canvas-mask {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    opacity: 0;
+    z-index: 50;
+    cursor: -webkit-zoom-in;
+    cursor: zoom-in; }
+  #scenario_draw_modal #scenario_drawer_container {
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    position: relative; }
+  #scenario_draw_modal .hidden {
+    display: none !important; }
+  #scenario_draw_modal .svg__flag {
+    position: relative;
+    height: 100%;
+    width: 100%; }
+  #scenario_draw_modal .svg_container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%; }
+    #scenario_draw_modal .svg_container path {
+      cursor: pointer;
+      fill: none; }
+      #scenario_draw_modal .svg_container path.symbol {
+        fill: rgba(0, 0, 0, 0.75); }
+    #scenario_draw_modal .svg_container g.lineGroup.active circle {
+      fill: #f98c06 !important; }
+    #scenario_draw_modal .svg_container g.lineGroup.active path {
+      stroke: #f98c06;
+      stroke-width: 2.2; }
+    #scenario_draw_modal .svg_container g.lineGroup:hover .line {
+      stroke-width: 2.8; }
+    #scenario_draw_modal .svg_container g.lineGroup:hover .symbol {
+      stroke-width: 2; }
+  #scenario_draw_modal #scenario_drawer_container .canvas-container {
+    height: 100%;
+    width: 100%;
+    position: relative;
+    background: #dfe1e2;
+    overflow: auto;
+    /**
+         shared
+         */
+    /* common */ }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .canvas {
+      position: absolute;
+      left: 0;
+      top: 0; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates {
+      width: 100%;
+      max-width: 300px;
+      position: absolute;
+      display: inline-block;
+      z-index: 1;
+      margin-left: 50px;
+      margin-top: 50px; }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates:hover .trash-conversation-btn .fa-trash {
+        opacity: 1; }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates.error {
+        border: 2px solid #ff3636; }
+        #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates.error .connector {
+          border-color: #dc3545; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates.conversation_start {
+      position: absolute; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates.editing {
+      z-index: 10; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates.conversation_start .connector.before {
+      display: none; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates.conversation_start .start-text-wrap {
+      background: #5696d6; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates.conversation_start .start-text {
+      opacity: 1;
+      display: inline-block;
+      border: 1px solid #fff;
+      padding: 0 5px;
+      font-size: 12px;
+      line-height: 1.9;
+      width: 50px;
+      text-align: center;
+      font-weight: normal; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates.conversation_start .trash-conversation-btn {
+      display: none !important; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .start-text-wrap {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      position: relative;
+      width: 100%;
+      background: #888;
+      padding: 5px 10px;
+      -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      min-height: 34px;
+      cursor: move;
+      color: #fff; }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .start-text-wrap span.trash-conversation-btn {
+        display: inline-block; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .start-text {
+      opacity: 0; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .connector {
+      position: absolute;
+      height: 22px;
+      width: 22px;
+      border: 1px solid #888;
+      cursor: pointer;
+      -webkit-box-shadow: 0 2px 12px 2px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 12px 2px rgba(0, 0, 0, 0.1);
+      background: #fff; }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .connector.active {
+        border-color: #f98c06;
+        border-width: 2px;
+        -webkit-box-shadow: 0 2px 12px 2px rgba(0, 0, 255, 0.1);
+        box-shadow: 0 2px 12px 2px rgba(0, 0, 255, 0.1); }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .connector.after {
+        right: -30px;
+        top: 50%; }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .connector.before {
+        left: 8px;
+        top: 6px;
+        z-index: 1; }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .connector.single {
+        background: url("/assets/scenario/images/single-layer.png") no-repeat #fff; }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .connector.multi {
+        background: url("/assets/scenario/images/multiple-layers.png") no-repeat #fff; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .head-wrap {
+      background: #f0f3f5;
+      position: relative;
+      -webkit-box-shadow: 0 3px 30px 1px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 3px 30px 1px rgba(0, 0, 0, 0.2); }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .response_template__js {
+      position: relative;
+      background: #eee;
+      margin: 10px 0 0;
+      -webkit-box-shadow: 0 3px 30px 1px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 3px 30px 1px rgba(0, 0, 0, 0.2); }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .response_template__js .response-header {
+        padding: 0 15px;
+        -webkit-box-align: center;
+        -ms-flex-align: center;
+        align-items: center;
+        color: #fff;
+        background: #888;
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-box-pack: justify;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        font-weight: 400; }
+        #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .response_template__js .response-header .trash-response-btn {
+          padding: 0;
+          font-size: 16px;
+          color: #fff; }
+        #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .response_template__js .response-header .header-label {
+          font-size: 11px;
+          color: #fff; }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .response_template__js .response-text {
+        padding: 15px 15px 12px;
+        background: #242e42; }
+        #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .response_template__js .response-text textarea {
+          min-height: 80px;
+          width: 100%;
+          border: 2px solid black;
+          padding: 10px; }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .response_template__js.error {
+        border: 2px solid #ff3636; }
+        #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .response_template__js.error .connector {
+          border-color: #dc3545; }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .response_template__js .add-outcome-btn {
+        border: none;
+        font-size: 10px;
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-box-align: center;
+        -ms-flex-align: center;
+        align-items: center;
+        -webkit-box-pack: center;
+        -ms-flex-pack: center;
+        justify-content: center;
+        height: 22px;
+        width: 22px;
+        padding: 0;
+        background: #5696d6;
+        color: #fff;
+        position: absolute;
+        right: -30px;
+        top: calc(50% + 30px); }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .form-group {
+      margin-bottom: 15px; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .img-wrapper {
+      width: 80px;
+      height: 80px;
+      min-width: 80px;
+      margin-right: 15px;
+      border: 1px solid black;
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+      -webkit-box-pack: center;
+      -ms-flex-pack: center;
+      justify-content: center;
+      overflow: hidden;
+      position: absolute;
+      left: -50px;
+      top: -50px;
+      background: #3a465f;
+      -webkit-box-shadow: 0 2px 12px 2px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 12px 2px rgba(0, 0, 0, 0.1); }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .img-wrapper img {
+      -o-object-fit: cover;
+      object-fit: cover;
+      width: 80%;
+      height: 80%;
+      cursor: pointer; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .media-body {
+      max-width: 275px;
+      width: 100%; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .trash-conversation-btn .fa-trash {
+      font-size: 16px;
+      cursor: pointer;
+      position: relative;
+      top: 2px; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .media {
+      position: relative;
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-pack: center;
+      -ms-flex-pack: center;
+      justify-content: center;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+      padding: 0 15px;
+      margin-top: 0; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_context_input {
+      position: relative;
+      width: 100%;
+      overflow-y: auto;
+      height: 111px;
+      padding: 10px; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_context_container {
+      position: relative;
+      min-height: 150px; }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_context_container h5 {
+        font-weight: bold;
+        font-size: 14px;
+        color: #707070; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .add-response {
+      padding: 0 15px 15px; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container button.editor-normal-btn {
+      padding: 8px 20px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 500;
+      -webkit-transition: 0.3s all ease-in-out;
+      -o-transition: 0.3s all ease-in-out;
+      transition: 0.3s all ease-in-out;
+      -webkit-box-shadow: 0 2px 12px 2px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 12px 2px rgba(0, 0, 0, 0.1); }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container button.button-no-frame {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .add-response {
+      text-align: right; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container.config-open .relationship_config_window_mask {
+      display: block; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window_mask {
+      display: none;
+      background: rgba(241, 243, 244, 0.5);
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 100%;
+      z-index: 3; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window {
+      z-index: -1;
+      display: none;
+      position: absolute;
+      background: #eee;
+      padding: 15px 15px 25px;
+      -webkit-box-shadow: 0 3px 30px 1px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 3px 30px 1px rgba(0, 0, 0, 0.4);
+      border: 1px solid #f6b945; }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window .form-header {
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-box-pack: justify;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        -webkit-box-align: center;
+        -ms-flex-align: center;
+        align-items: center;
+        margin-bottom: 25px;
+        font-weight: bold; }
+        #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window .form-header h4 {
+          margin-bottom: 0;
+          font-weight: 500; }
+        #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window .form-header .close__js {
+          position: relative;
+          height: 20px;
+          width: 20px;
+          text-align: center;
+          cursor: pointer;
+          color: rgba(0, 0, 0, 0.5); }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window .divider {
+        margin: 30px 20px;
+        border-bottom: 1px dashed rgba(0, 0, 0, 0.5); }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window .label,
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window input {
+        color: #000;
+        display: block;
+        width: 100%; }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window input {
+        border: 1px solid rgba(0, 0, 0, 0.65);
+        padding: 5px; }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window .label {
+        text-transform: none;
+        text-align: left;
+        padding: 0 0 10px;
+        color: rgba(0, 0, 0, 0.65);
+        font-size: 14px;
+        font-weight: 400; }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window .btn-wrap .btn {
+        width: 100%;
+        padding: 8px 35px;
+        -webkit-box-shadow: 0 2px 12px 2px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 12px 2px rgba(0, 0, 0, 0.1); }
+        #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window .btn-wrap .btn:hover {
+          -webkit-box-shadow: 0 3px 30px 1px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 3px 30px 1px rgba(0, 0, 0, 0.2); }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window .btn-wrap .btn-delete-connector {
+        margin-top: 15px;
+        background: rgba(185, 153, 93, 0.8); }
+        #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window .btn-wrap .btn-delete-connector:hover {
+          background: #b9995d; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container textarea {
+      font: 14px "Helvetica Neue";
+      font-weight: normal;
+      color: #707070; }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .header-label {
+      font: 14px "Helvetica Neue";
+      font-weight: bold;
+      color: #707070; }
+  #scenario_draw_modal .tidy-conversation-btn,
+  #scenario_draw_modal .close__js {
+    -webkit-transition: -webkit-transform 0.3s ease-in-out;
+    transition: -webkit-transform 0.3s ease-in-out;
+    -o-transition: transform 0.3s ease-in-out;
+    transition: transform 0.3s ease-in-out;
+    transition: transform 0.3s ease-in-out, -webkit-transform 0.3s ease-in-out; }
+    #scenario_draw_modal .tidy-conversation-btn:hover,
+    #scenario_draw_modal .close__js:hover {
+      -webkit-transform: rotate(90deg);
+      -ms-transform: rotate(90deg);
+      transform: rotate(90deg); }

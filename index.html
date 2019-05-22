@@ -2,7 +2,7 @@
 
 <head>
     <title>Scenario Experimentation</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
     <link href="https://fonts.googleapis.com/css?family=Playfair+Display" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
     <!--d3-->
@@ -12,6 +12,9 @@
             src="https://code.jquery.com/jquery-3.3.1.min.js"
             integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
             crossorigin="anonymous"></script>
+    <!--  old school:  jquery validation-->
+    <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.min.js"></script>
+
     <!--bs popper-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <!--bs js-->
@@ -31,20 +34,26 @@
                 <div class="canvas" id="canvas">
                     <div class="canvas-mask hidden" id="canvas-mask"></div>
                     <svg class="svg_container" id="svg_container"></svg>
+                    <div class="relationship_config_window_mask canvas-mask" id="relationship_config_window_mask"></div>
                 </div>
                 <div class="relationship_config_window">
                     <form id="relationship_config_form" name="relationship_config_form">
+                        <div class="form-header">
+                            <h4>Connector Properties</h4>
+                            <span class="close__js"><i class="fa fa-times"></i></span>
+                        </div>
                         <div class="weight-wrap form-group">
-                            <div class="label">weight</div>
+                            <div class="label">Answer weight</div>
                             <input name="weight" type="number" maxlength="3" required>
                         </div>
                         <div class="points-wrap form-group">
-                            <div class="label">points</div>
+                            <div class="label">Reward or penalty point value</div>
                             <input name="points" type="number" maxlength="5" required>
                         </div>
+                        <hr class="divider">
                         <div class="btn-wrap">
-                            <button class="btn btn-danger" id="relationship_config_delete" type="button">Delete</button>
-                            <button class="btn btn-primary" id="relationship_config_close" type="submit">Close</button>
+                            <button class="btn btn-primary" id="relationship_config_close" type="submit">Save</button>
+                            <button class="btn btn-danger btn-delete-connector" id="relationship_config_delete" type="button">Delete Connector</button>
                         </div>
                     </form>
                 </div>
@@ -52,76 +61,95 @@
         </div>
     </div>
 
+    <div class="behavior-wrap">
+        <button class="btn btn-primary btn-no-frame tidy-conversation-btn" data-toggle="tooltip" data-placement="top" title="Reset layout">
+            <i class="fa fa-refresh"></i>
+        </button>
+    </div>
+
     <div class="guide-bar">
         <div class="guide-text">
             Add responses, and outcomes to those responses.
         </div>
-        <div class="behavior-wrap">
-            <button class="btn btn-primary tidy-conversation-btn"><i class="fa fa-random"></i>Tidy Conversations</button>
-            <button class="btn btn-primary add-conversation-point-btn"><i class="fa fa-plus"></i>Add Conversation Point</button>
-            <div id="zoom-container" class="zoom-area" data-toggle="tooltip" data-placement="top" title="Press 'Ctrl' & scroll to zoom">
-                <div class="zoom-text">zoom <span id="zoom-percentage">100</span>%</div>
-                <span id="zoom-reset" class="zoom-toggle"><i class="fa fa-refresh"></i>Reset</span>
-            </div>
-        </div>
     </div>
 
     <div class="content-footer text-right">
+        <div id="zoom-container" class="zoom-area" data-toggle="tooltip" data-placement="top" title="Press 'Ctrl' & scroll to zoom">
+       <span class="scroll-note">
+           (CTRL+Scroll to zoom)
+       </span>
+            <div class="zoom-text">Zoom: <span id="zoom-percentage">100</span>%</div>
+        </div>
+        <button id="zoom-reset" class="btn btn-outline-primary zoom-toggle">
+            Reset Zoom
+        </button>
+        <button class="btn btn-outline-primary btn-outline-primary-white add-conversation-point-btn">
+            Add Conversation Stack
+        </button>
         <button type="button" class="btn btn-primary" id="conversation_drawer_finish">Finish</button>
     </div>
 
-    <!-- templates -->
     <div class="conversation_templates conversation_template__js hidden" data-id="{{id}}">
+        <div class="img-wrapper">
+            <img class="character-avatar" src="{{expression_url}}" alt="{{expression_name}}">
+        </div>
         <div class="connector before" data-id="{{id}}"></div>
-        <div class="media">
-            <h5 class="mt-0 start-text"><span>Start</span></h5>
-            <span class="mt-0 trash-conversation-btn"><i class="fa fa-trash"></i></span>
-            <div class="img-wrapper">
-                <img class="character-avatar" src="/images/characters/{{expression_name}}/start.png" alt="{{expression_name}}">
+        <div class="head-wrap">
+            <div class="mt-0 start-text-wrap">
+                <span class="start-text">START</span>
+                <span class="mt-0 trash-conversation-btn"><i class="fa fa-trash"></i></span>
             </div>
-            <div class="media-body conversation_context_container">
-                <p class="conversation_context">{{context}}</p>
-                <textarea class="conversation_context_input" type="text">{{context}}</textarea>
+            <div class="media">
+                <div class="media-body conversation_context_container">
+                    <h5 class="header-label">Scenario Text</h5>
+                    <!--<p class="conversation_context">{{context}}</p>-->
+                    <textarea class="conversation_context_input" type="text">{{context}}</textarea>
+                </div>
+            </div>
+            <div class="add-response">
+                <button class="btn btn-primary editor-normal-btn add-response-btn">
+                    Add Response
+                </button>
             </div>
         </div>
         <div class="response-list responses_list__js">
             {% for response in responses %}
             <div class="conversation_templates response_template__js" data-id="{{response.id}}">
-                <div class="row form-group">
+                <div class="response-header">
+                    <span class="header-label">Response Text</span>
+                    <button class="button-no-frame trash-response-btn"><i class="fa fa-trash"></i></button>
+                </div>
+                <div class="response-text-container">
                     <div class="col-sm-12 response-text">
-                        <textarea cols="4" placeholder="Enter response text here...">{{response.text}}</textarea>
+                        <textarea cols="4" placeholder="Enter a response that the learner can use in this situation.">{{response.text}}</textarea>
                     </div>
                 </div>
                 <div class="response-footer">
-                    <button class="button-no-frame trash-response-btn"><i class="fa fa-trash"></i></button>
-                    <button class="editor-normal-btn add-outcome-btn"><i class="fa fa-plus"></i> Add Outcome</button>
                 </div>
                 <div class="connector after" data-id="{{response.id}}"></div>
+                <button class="editor-normal-btn add-outcome-btn"><i class="fa fa-plus"></i></button>
             </div>
             {% endfor %}
-        </div>
-        <div class="add-response">
-            <button class="editor-normal-btn add-response-btn"><i class="fa fa-plus"></i> Add Response</button>
         </div>
     </div>
 
     <div class="conversation_templates response_template__js hidden">
-        <div class="row form-group">
+        <div class="response-header">
+            <span class="header-label">Response Text</span>
+            <button class="button-no-frame trash-response-btn"><i class="fa fa-trash"></i></button>
+        </div>
+        <div class="response-text-container">
             <div class="col-sm-12 response-text">
-               <textarea cols="5" placeholder="Enter response text here...">
-               </textarea>
+                <textarea cols="5" placeholder="Enter a response that the learner can use in this situation."></textarea>
             </div>
         </div>
-        <div class="response-footer">
-            <button class="button-no-frame trash-response-btn"><i class="fa fa-trash"></i></button>
-            <button class="editor-normal-btn add-outcome-btn"><i class="fa fa-plus"></i> Add Outcome</button>
-        </div>
         <div class="connector after"></div>
+        <button class="editor-normal-btn add-outcome-btn"><i class="fa fa-plus"></i></button>
     </div>
     <!-- end of templates -->
 </div>
 
-<script src="js/editor.js" type="text/javascript"></script>
+<script src="assets/js/editor.js" type="text/javascript"></script>
 
 <script type="text/javascript">
     var fakeData = {
@@ -235,7 +263,7 @@
                 "depth": 2,
                 "context": "This is The Conversation 66666666 Context Test",
                 "expression_url": "patrick",
-                "expression_name": "patrick",
+                "expression_name": "start",
                 "hasParents": true,
                 "hasChildren": true,
                 "responses": [{"id": "85821f0a-afdb-48d6-8282-8be064dfa190", "text": "10", "type": "response", "parent_id": "d3b4f80f-5dd2-426e-980f-22c31f331764", "children_ids": ["f1179ff1-d88d-4e22-87b1-44d6bff8323e"]}, {
@@ -264,7 +292,7 @@
                 "depth": 1,
                 "context": "This is The Conversation 3333333 Context Test",
                 "expression_url": "patrick",
-                "expression_name": "patrick",
+                "expression_name": "start",
                 "hasParents": true,
                 "hasChildren": true,
                 "responses": [{"id": "a06b4fbd-64f8-40a3-8eaa-6bf6ee83364f", "text": "4", "type": "response", "parent_id": "48b557b9-2702-4448-b972-3d862d083921", "children_ids": ["d3b4f80f-5dd2-426e-980f-22c31f331764"]}, {
@@ -287,7 +315,7 @@
                 "depth": 2,
                 "context": "new test 1-15",
                 "expression_url": "patrick",
-                "expression_name": "patrick",
+                "expression_name": "start",
                 "hasParents": true,
                 "hasChildren": true,
                 "responses": [{
@@ -310,7 +338,7 @@
                 "depth": 1,
                 "context": "",
                 "expression_url": "patrick",
-                "expression_name": "patrick",
+                "expression_name": "start",
                 "hasParents": true,
                 "hasChildren": true,
                 "responses": [{"id": "1c4df1b3-8450-419e-bbe4-a2ead789c0d9", "text": "7", "type": "response", "parent_id": "4133e0a7-cf67-4e70-bb0e-94e44b65375a", "children_ids": ["57ecba0e-70b7-4f90-bda4-c8c8ae635dfa"]}, {
@@ -333,7 +361,7 @@
                 "depth": 0,
                 "context": "This is The Conversation 111111111 Context Test",
                 "expression_url": "patrick",
-                "expression_name": "patrick",
+                "expression_name": "start",
                 "hasParents": false,
                 "hasChildren": true,
                 "responses": [{
@@ -356,7 +384,7 @@
                 "depth": 3,
                 "context": "",
                 "expression_url": "patrick",
-                "expression_name": "patrick",
+                "expression_name": "start",
                 "hasParents": true,
                 "hasChildren": false,
                 "responses": [],
@@ -367,7 +395,7 @@
                 "depth": 3,
                 "context": "",
                 "expression_url": "patrick",
-                "expression_name": "patrick",
+                "expression_name": "start",
                 "hasParents": true,
                 "hasChildren": false,
                 "responses": [],
@@ -384,7 +412,7 @@
                 "depth": 3,
                 "context": "",
                 "expression_url": "patrick",
-                "expression_name": "patrick",
+                "expression_name": "start",
                 "hasParents": true,
                 "hasChildren": false,
                 "responses": [],
@@ -401,7 +429,7 @@
                 "depth": 3,
                 "context": "",
                 "expression_url": "patrick",
-                "expression_name": "patrick",
+                "expression_name": "start",
                 "hasParents": true,
                 "hasChildren": false,
                 "responses": [],
@@ -418,7 +446,7 @@
                 "depth": 3,
                 "context": "",
                 "expression_url": "patrick",
-                "expression_name": "patrick",
+                "expression_name": "start",
                 "hasParents": true,
                 "hasChildren": false,
                 "responses": [],
@@ -435,7 +463,7 @@
                 "depth": 2,
                 "context": "",
                 "expression_url": "patrick",
-                "expression_name": "patrick",
+                "expression_name": "start",
                 "hasParents": true,
                 "hasChildren": false,
                 "responses": [],
@@ -446,7 +474,7 @@
                 "depth": 2,
                 "context": "",
                 "expression_url": "patrick",
-                "expression_name": "patrick",
+                "expression_name": "start",
                 "hasParents": true,
                 "hasChildren": false,
                 "responses": [],
@@ -485,7 +513,8 @@
             }, {"id": "15e2fdf1-fe51-4637-98f6-b25bb911e84c", "text": "3", "type": "response", "parent_id": "5c8b30ab-0007-43a9-ac68-1dddc32f834a", "children_ids": ["d3b4f80f-5dd2-426e-980f-22c31f331764"]}]
         }, "character": "patrick", "qualities": ["a", "b"]
     };
-    new ConversationEditor(fakeData);
+    var conversationEditor = new ConversationEditor(fakeData);
+    conversationEditor.drawSvgConnectorLinesUI();
 </script>
 </body>
 </html>
