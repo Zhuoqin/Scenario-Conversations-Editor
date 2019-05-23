@@ -807,6 +807,11 @@ export class ConversationEditor {
         // read & record positions
         this.readRelationshipGraphicsData();
 
+        // line group
+        let lineGroups = this.lineDrawsGroup.selectAll('.lineGroup').data(connectorLines);
+        lineGroups.exit().remove();
+        lineGroups.enter().append("g");
+
         // lines
         let lines = this.lineDrawsGroup.selectAll(".line").data(connectorLines);
         lines.exit().remove();
