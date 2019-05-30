@@ -138,13 +138,6 @@ export class ConversationEditor {
         // container
         this.$container.on('click', '.add-response-btn', (event) => {
             ConversationEditor.preventDefault(event);
-            // validating
-            if (!this.validateConversations()) {
-                // show alert
-                alert(ConversationEditor.INVALID_CONVERSATION_MSG);
-                return;
-            }
-
             const $target = $(event.target);
             const $currentConversation = $target.closest('.conversation_template__js');
             const conversationID = $currentConversation.data('id');
@@ -161,13 +154,6 @@ export class ConversationEditor {
 
         this.$container.on('click', '.trash-response-btn', (event) => {
             ConversationEditor.preventDefault(event);
-            // validating
-            if (!this.validateConversations()) {
-                // show alert
-                alert(ConversationEditor.INVALID_CONVERSATION_MSG);
-                return;
-            }
-
             const $target = $(event.target);
             const $currentResponse = $target.closest('.response_template__js');
             const $currentConversation = $target.closest('.conversation_template__js');
