@@ -98,7 +98,6 @@ $rgb_grey: rgba(0, 0, 0, 0.65);
     .guide-bar {
         display: none;
         //display: block;
-        z-index: 1;
         position: fixed;
         bottom: 55px;
         width: 100%;
@@ -184,24 +183,40 @@ $rgb_grey: rgba(0, 0, 0, 0.65);
             }
         }
 
-        g.lineGroup.active {
-            circle {
-                fill: rgb(249, 140, 6) !important;
+        g.lineGroup {
+            &.active {
+                path.line {
+                    stroke-dasharray: 3;
+                }
+
+                circle {
+                    fill: rgb(249, 140, 6) !important;
+                }
+
+                path {
+                    stroke: rgb(249, 140, 6);
+                    stroke-width: 2.2;
+                }
             }
 
-            path {
-                stroke: rgb(249, 140, 6);
-                stroke-width: 2.2;
-            }
-        }
+            &.highlight {
+                path.line {
+                    stroke: hsl(0, 0%, 100%);
+                }
 
-        g.lineGroup:hover {
-            .line {
-                stroke-width: 2.8;
+                path.symbol {
+                    fill: hsl(0, 0%, 100%);
+                }
             }
 
-            .symbol {
-                stroke-width: 2;
+            &:hover {
+                .line {
+                    stroke-width: 2.8;
+                }
+
+                .symbol {
+                    stroke-width: 2;
+                }
             }
         }
     }
@@ -217,6 +232,8 @@ $rgb_grey: rgba(0, 0, 0, 0.65);
             position: absolute;
             left: 0;
             top: 0;
+            // default
+            transform: translate(0, 0) scale(1);
         }
 
         .conversation_templates {
@@ -224,7 +241,6 @@ $rgb_grey: rgba(0, 0, 0, 0.65);
             max-width: 300px;
             position: absolute;
             display: inline-block;
-            z-index: 1;
             // space top left
             margin-left: $avatar_offset;
             margin-top: $avatar_offset;
@@ -250,7 +266,7 @@ $rgb_grey: rgba(0, 0, 0, 0.65);
 
         .conversation_templates {
             &.editing {
-                z-index: 10;
+                z-index: inherit;
             }
 
             &.conversation_start {
@@ -322,7 +338,7 @@ $rgb_grey: rgba(0, 0, 0, 0.65);
                 }
 
                 &.before {
-                    left: 8px;
+                    left: 0;
                     top: 6px;
                     z-index: 1;
                 }
@@ -412,6 +428,7 @@ $rgb_grey: rgba(0, 0, 0, 0.65);
         }
 
         .img-wrapper {
+            z-index: -1;
             width: 80px;
             height: 80px;
             min-width: 80px;
@@ -426,6 +443,16 @@ $rgb_grey: rgba(0, 0, 0, 0.65);
             top: -$avatar_offset;
             background: $avatar_bg;
             box-shadow: $icon_shadow;
+        }
+
+        .img-click-handler--js {
+            cursor: pointer;
+            width: 80px;
+            height: $avatar_offset;
+            position: absolute;
+            left: -$avatar_offset;
+            top: -$avatar_offset;
+            background: transparent;
         }
 
         .img-wrapper img {
@@ -579,6 +606,8 @@ $rgb_grey: rgba(0, 0, 0, 0.65);
             }
 
             .btn-wrap {
+                min-width: 289px;
+
                 .btn {
                     width: 100%;
                     padding: 8px 35px;

@@ -33,8 +33,7 @@ export class ConversationEditor {
 
     // layer settings
     private static LAYER_HIDDEN = -1;
-    private static LAYER_DEFAULT = 0;
-    private static LAYER_CONVERSATION = 1;
+    private static LAYER_DEFAULT = 'inherit';
     private static LAYER_ACTIVE_SVG = 2;
     private static LAYER_ON_TOP = 5;
 
@@ -48,7 +47,7 @@ export class ConversationEditor {
     private connectorLines: Map<string, RelationshipLine>; // line that has Map<id, Relationship>
     private lineDrawsGroup: any;
     private iterationMaxDepth: number;
-    private negativeConversations: Set<Conversation>;
+    private negativeConversations: Set<string>;  // Set<conversationID>
     private static CIRCLE_RADIUS = 0.3;
     private static SVG_CIRCLE_RADIUS = 10;
     private static CONVERSATION_WIDTH = 300;
@@ -137,9 +136,8 @@ export class ConversationEditor {
         let isAfterClicked = false;
 
         // container
-        this.$container.on('click', '.add-response-btn', (e) => {
-            e.preventDefault();
-
+        this.$container.on('click', '.add-response-btn', (event) => {
+            ConversationEditor.preventDefault(event);
             // validating
             if (!this.validateConversations()) {
                 // show alert
@@ -147,11 +145,12 @@ export class ConversationEditor {
                 return;
             }
 
-            const $target = $(e.target);
+            const $target = $(event.target);
             const $currentConversation = $target.closest('.conversation_template__js');
             const conversationID = $currentConversation.data('id');
             let conversation = this.conversations.get(conversationID);
             if (conversation.isMaxResponsesReached()) {
+                this.showGuideText(5, 'alert');
                 return;
             }
             // Data related to elements' IDs
@@ -160,9 +159,8 @@ export class ConversationEditor {
             this.tidyConversations();
         });
 
-        this.$container.on('click', '.trash-response-btn', (e) => {
-            e.preventDefault();
-
+        this.$container.on('click', '.trash-response-btn', (event) => {
+            ConversationEditor.preventDefault(event);
             // validating
             if (!this.validateConversations()) {
                 // show alert
@@ -170,7 +168,7 @@ export class ConversationEditor {
                 return;
             }
 
-            const $target = $(e.target);
+            const $target = $(event.target);
             const $currentResponse = $target.closest('.response_template__js');
             const $currentConversation = $target.closest('.conversation_template__js');
             let currentResponse = this.responses.get($currentResponse.data('id'));
@@ -186,23 +184,23 @@ export class ConversationEditor {
             this.tidyConversations();
         });
 
-        this.$container.on('click', '.add-outcome-btn', (e) => {
-            e.preventDefault();
-            const $target = $(e.target);
+        this.$container.on('click', '.add-outcome-btn', (event) => {
+            ConversationEditor.preventDefault(event);
+            const $target = $(event.target);
             const $currentResponse = $target.closest('.response_template__js');
             let response = this.responses.get($currentResponse.data('id'));
             let newCreatedConversation = this.conversationChangesData('add');
             newCreatedConversation.setDepth(response.getParent().getDepth() + 1);
             this.conversationChangesUI('add', newCreatedConversation.getUuid());
-            this.addSvgConnectorLinesData(newCreatedConversation.getUuid(), $currentResponse.data('id'));
+            this.addSvgConnectorLinesData(newCreatedConversation, response);
             this.drawSvgConnectorLinesUI();
             this.adjustCanvasSize();
             // clean error if it has
             $currentResponse.removeClass('error');
         });
 
-        this.$container.on('keyup', '.response-text textarea', (e) => {
-            const $target = $(e.target);
+        this.$container.on('keyup', '.response-text textarea', (event) => {
+            const $target = $(event.target);
             const text = $target.val().toString().trim();
             const $currentResponse = $target.closest('.response_template__js');
             const $currentConversation = $target.closest('.conversation_template__js');
@@ -210,23 +208,23 @@ export class ConversationEditor {
             this.responseChangesData('update', $currentConversation.data('id'), $currentResponse.data('id'), text);
         });
 
-        this.$container.on('focusin', '.conversation_template__js textarea', (e) => {
-            const $target = $(e.target);
+        this.$container.on('focusin', '.conversation_template__js textarea', (event) => {
+            const $target = $(event.target);
             const $currentConversation = $target.closest('.conversation_template__js');
             $currentConversation.addClass('editing');
             this.$svgContainer.css('z-index', ConversationEditor.LAYER_ACTIVE_SVG);
         });
 
-        this.$container.on('focusout', '.conversation_template__js textarea', (e) => {
-            const $target = $(e.target);
+        this.$container.on('focusout', '.conversation_template__js textarea', (event) => {
+            const $target = $(event.target);
             const $currentConversation = $target.closest('.conversation_template__js');
             $currentConversation.removeClass('editing');
             this.$svgContainer.css('z-index', ConversationEditor.LAYER_DEFAULT);
         });
 
-        this.$container.on('click', '.connector', (e) => {
-            e.preventDefault();
-            const $target = $(e.target);
+        this.$container.on('click', '.connector', (event) => {
+            ConversationEditor.preventDefault(event);
+            const $target = $(event.target);
             if ($('.connector.active').length > 1 ||
                 ($target.hasClass('before') && $('.connector.active.before').length) ||
                 ($target.hasClass('after') && $('.connector.active.after').length)) {
@@ -246,7 +244,7 @@ export class ConversationEditor {
                     alert("This connecting will cause conversations playback, please select another one.");
                     return;
                 }
-                this.addSvgConnectorLinesData(conversationID, responseID);
+                this.addSvgConnectorLinesData(this.getConversationById(conversationID), this.getResponseById(responseID));
                 this.drawSvgConnectorLinesUI();
                 // remove active box after connected
                 $('.connector').removeClass('active');
@@ -258,6 +256,7 @@ export class ConversationEditor {
 
         // canvas path or setting symbol click
         this.$canvas.on('click', '.svg_container .line, .svg_container .symbol, .svg_container .settingCircle', (event) => {
+            ConversationEditor.preventDefault(event);
             const $lineGroup = $(event.target).closest('.lineGroup');
             const id = $lineGroup.attr('id');
             this.$svgContainer.find('lineGroup').removeClass('active');
@@ -265,14 +264,15 @@ export class ConversationEditor {
             this.animateRelationshipBoxIn(id, event);
         });
 
-        this.$canvas.on('input', '.conversation_context_container .conversation_context_input', (e) => {
-            let id = $(e.target).closest('.conversation_template__js').data('id');
-            let text = $(e.target).val().toString().trim();
+        this.$canvas.on('input', '.conversation_context_container .conversation_context_input', (event) => {
+            let id = $(event.target).closest('.conversation_template__js').data('id');
+            let text = $(event.target).val().toString().trim();
             this.conversationChangesData('update', id, text);
         });
 
-        this.$canvas.on('click', '.trash-conversation-btn', (e) => {
-            let conversationId = $(e.target).closest('.conversation_template__js').data('id');
+        this.$canvas.on('click', '.trash-conversation-btn', (event) => {
+            ConversationEditor.preventDefault(event);
+            let conversationId = $(event.target).closest('.conversation_template__js').data('id');
             let isConversationsValid = this.validateConversations();
             let isConversationPositive = this.conversations.get(conversationId).getDepth() > 0;
             if (isConversationPositive && !isConversationsValid) {
@@ -281,6 +281,7 @@ export class ConversationEditor {
             }
 
             if (!isConversationPositive) {
+                this.negativeConversations.delete(conversationId);
                 this.conversationRemovalHandler(conversationId, isConversationsValid);
                 return;
             }
@@ -290,27 +291,33 @@ export class ConversationEditor {
             }
         });
 
-        this.$canvas.on('click', (e) => {
-            const $target = $(e.target);
-
+        this.$canvas.on('click', (event) => {
+            const $target = $(event.target);
             // unselect path
             if (!$target.is('path')) {
-                this.triggerRelationshipConfigForm();
+                this.triggerRelationshipConfigFormClose();
             }
         });
 
-        this.$modalContainer.on('click', '.character-avatar', (e) => {
+        this.$modalContainer.on('click', '.img-click-handler--js', (event) => {
+            ConversationEditor.preventDefault(event);
             if (this.avatarChangeLocker) {
                 return;
             }
 
             this.avatarChangeLocker = true;
-            const $target = $(e.target);
-            const currentExpression = $target.attr('alt');
+            const $target = $(event.target);
+            const $imgTarget = $target.next('.img-wrapper').children();
+
+            const currentExpression = $target.data('name');
             const nextExpression = ConversationEditor.getNextExpression(currentExpression);
-            $target.attr({
-                'src': $target.attr('src').replace(currentExpression, nextExpression),
-                'alt': nextExpression
+            const newExpression = $imgTarget.attr('src').replace(currentExpression, nextExpression);
+            // update mask
+            $target.data('name', nextExpression);
+            // refresh img target
+            $imgTarget.fadeOut(function () {
+                $(this).attr('src', newExpression);
+                $(this).fadeIn();
             });
 
             let conversation = this.conversations.get($target.closest('.conversation_template__js').data('id'));
@@ -323,8 +330,8 @@ export class ConversationEditor {
         });
 
         // modal
-        this.$modalContainer.on('click', '.add-conversation-point-btn', (e) => {
-            e.preventDefault();
+        this.$modalContainer.on('click', '.add-conversation-point-btn', (event) => {
+            ConversationEditor.preventDefault(event);
             // prevent ui change when the scale is not normal
             if (this.zoomed) {
                 $('#zoom-reset').trigger('click');
@@ -333,8 +340,8 @@ export class ConversationEditor {
             this.conversationChangesUI('add', newCreatedConversation.getUuid());
         });
 
-        this.$modalContainer.on('click', '.tidy-conversation-btn', (e) => {
-            e.preventDefault();
+        this.$modalContainer.on('click', '.tidy-conversation-btn', (event) => {
+            ConversationEditor.preventDefault(event);
             // prevent ui change when the scale is not normal
             if (this.zoomed) {
                 $('#zoom-reset').trigger('click');
@@ -347,19 +354,20 @@ export class ConversationEditor {
             }
             this.tidyConversations();
             // close relationship config
-            this.triggerRelationshipConfigForm();
+            this.triggerRelationshipConfigFormClose();
         });
 
         // behaviors
-        $('#zoom-reset').off().on('click', (e) => {
-            e.preventDefault();
+        $('#zoom-reset').off().on('click', (event) => {
+            ConversationEditor.preventDefault(event);
             this.resetZoomView();
             // reset guide text
+            this.showGuideText();
         });
 
         // relationship popup
-        this.$relationship_config.on('submit', 'form', (e) => {
-            e.preventDefault();
+        this.$relationship_config.on('submit', 'form', (event) => {
+            ConversationEditor.preventDefault(event);
             let newWeight = Number(this.$relationship_config.find('input[name="weight"]').val());
             let newPoints = Number(this.$relationship_config.find('input[name="points"]').val());
             this.editingRelationship.setWeight(newWeight);
@@ -368,24 +376,25 @@ export class ConversationEditor {
             this.closeRelationshipBox();
         });
 
-        this.$relationship_config.on('click', '#relationship_config_delete', (e) => {
-            e.preventDefault();
+        this.$relationship_config.on('click', '#relationship_config_delete', (event) => {
+            ConversationEditor.preventDefault(event);
             if (this.$relationship_config.is(':visible') && this.editingRelationship) {
                 this.checkAndRemoveRelationship();
             }
         });
 
-        this.$relationship_config.on('click', '.close__js', (e) => {
-            e.preventDefault();
+        this.$relationship_config.on('click', '.close__js', (event) => {
+            ConversationEditor.preventDefault(event);
             this.closeRelationshipBox();
         });
 
-        this.$relationship_config_mask.on('click', (e) => {
-            e.preventDefault();
+        this.$relationship_config_mask.on('click', (event) => {
+            ConversationEditor.preventDefault(event);
             this.closeRelationshipBox();
         });
 
-        this.$finishBtn.on('click', () => {
+        this.$finishBtn.on('click', (event) => {
+            ConversationEditor.preventDefault(event);
             if (!this.validateConversations()) {
                 // show alert
                 alert(ConversationEditor.INVALID_CONVERSATION_MSG);
@@ -394,14 +403,15 @@ export class ConversationEditor {
             if (!this.validateResponses()) {
                 return;
             }
-            this.triggerRelationshipConfigForm();
+            this.triggerRelationshipConfigFormClose();
             this.compileRevisionData();
             this.$modalContainer.modal('hide');
             $('body').removeClass('modal-open');
         });
 
         // outer modal triggers
-        $('#scenario_draw_modal_btn').on('click', () => {
+        $('#scenario_draw_modal_btn').on('click', (event) => {
+            ConversationEditor.preventDefault(event);
             this.$modalContainer.modal('show');
         });
     }
@@ -447,7 +457,7 @@ export class ConversationEditor {
         // reset stacks
         this.iterationMaxDepth = 0;
         this.drawConversations = new Set<string>();
-        this.negativeConversations = new Set<Conversation>();
+        this.negativeConversations = new Set<string>();
         this.conversationStack = new Map<number, number>();
         this.responseStack = new Map<number, number>();
         // store relationship position into cache to improve drag calculation performance
@@ -457,6 +467,7 @@ export class ConversationEditor {
         // clean content
         this.$svgContainer.siblings().not('.canvas-mask').remove();
         this.recursiveDrawConversations(this.rootConversation);
+        this.drawNegativeConversations();
         this.decorateConnectorBoxes();
         this.redrawSvgConnectorLines();
         this.adjustCanvasSize();
@@ -466,7 +477,7 @@ export class ConversationEditor {
     /**
      * submit relation ship config form
      */
-    private triggerRelationshipConfigForm() {
+    private triggerRelationshipConfigFormClose() {
         if (this.$relationship_config.is(':visible')) {
             this.$relationship_config.find('#relationship_config_close').trigger('click');
         }
@@ -494,7 +505,6 @@ export class ConversationEditor {
             this.iterativeBuildConversations(conversations, responses);
             this.buildRelationships(relationships);
         } else {
-            // [OLD DATA STRUCTURE]
             // build data for old config version, no scenarioData existing but 'questions'
             this.oldQuestionDataHandler(questions);
             // loop again to build relationship because it needs all conversations created first then use its id to connect
@@ -513,7 +523,7 @@ export class ConversationEditor {
             const combID: string = relationshipObj.id;
             let conversation = this.getConversationById(relationshipObj['conversation_id']);
             let response = this.getResponseById(relationshipObj['response_id']);
-            let newRelationship = new RelationshipLine(combID, conversation, response, relationshipObj.weight, relationshipObj.points);
+            let newRelationship = new RelationshipLine(conversation, response, combID, relationshipObj.weight, relationshipObj.points);
             this.connectorLines.set(combID, newRelationship);
         });
     }
@@ -812,6 +822,11 @@ export class ConversationEditor {
         lineGroups.exit().remove();
         lineGroups.enter().append("g");
 
+        lineGroups.attr('class', "lineGroup")
+            .attr("id", (data) => {
+                return data.getId();
+            });
+
         // lines
         let lines = this.lineDrawsGroup.selectAll(".line").data(connectorLines);
         lines.exit().remove();
@@ -834,8 +849,7 @@ export class ConversationEditor {
 
     private readRelationshipGraphicsData() {
         this.connectorLines.forEach((relationship: RelationshipLine) => {
-            let lineData = this.fetchSingleLineData(relationship);
-            this.relationshipCurveLinesCache.set(relationship.getId(), ConversationEditor.compileCurveLineData(lineData));
+            this.fetchSingleLineData(relationship);
         });
     }
 
@@ -915,7 +929,10 @@ export class ConversationEditor {
         }
 
         const lineData = this.calculateConnectorLineData(boxBefore, boxAfter, beforeID, afterID);
-        this.relationshipPositionCache.set(relationship.getId(), lineData);
+        if (lineData && lineData.length) {
+            this.relationshipPositionCache.set(relationship.getId(), lineData);
+            this.relationshipCurveLinesCache.set(relationship.getId(), ConversationEditor.compileCurveLineData(lineData));
+        }
         return lineData;
     }
 
@@ -1043,18 +1060,14 @@ export class ConversationEditor {
 
     /**
      * add relationship between response and conversation
-     * @param beforeID
-     * @param afterID
+     * @param conversation: Conversation
+     * @param response: Response
      */
-    private addSvgConnectorLinesData(beforeID: string, afterID: string): void {
+    private addSvgConnectorLinesData(conversation: Conversation, response: Response): void {
         // root never has parent
-        if (beforeID === this.rootConversation.getUuid()) {
+        if (conversation === this.rootConversation) {
             return;
         }
-
-        // add into response's children
-        let conversation = this.getConversationById(beforeID);
-        let response = this.getResponseById(afterID);
 
         // no connect to itself
         if (conversation.getUuid() === response.getParent().getUuid()) {
@@ -1062,9 +1075,8 @@ export class ConversationEditor {
         }
 
         // push into lines array
-        const combID: string = `comb_${beforeID}_${afterID}`;
-        let newRelationShip = new RelationshipLine(combID, this.getConversationById(beforeID), this.getResponseById(afterID));
-        this.connectorLines.set(combID, newRelationShip);
+        let newRelationShip = new RelationshipLine(conversation, response);
+        this.connectorLines.set(newRelationShip.getId(), newRelationShip);
 
         // give the response relationship to new created conversation
         if (conversation && response) {
@@ -1154,10 +1166,12 @@ export class ConversationEditor {
                 if (moveToLeft <= 0 || moveToTop <= 0) {
                     return;
                 }
+                const conversationID = $(this).data('id');
                 $(this).css({left: moveToLeft, top: moveToTop});
                 // clean conversation related relationship position cache before redraw
-                self.cleanConversationRelatedCache($(this).data('id'));
+                self.cleanConversationRelatedCache(conversationID);
                 self.redrawSvgConnectorLines();
+                self.decorateRelatedLinesByConversationID(conversationID);
             })
             .on('end', function () {
                 dragging = false;
@@ -1165,16 +1179,17 @@ export class ConversationEditor {
                 initialY = currentY = 0;
                 position = null;
                 // adjust canvas if exceed
-                let extendWidth = $(this).position().left + ConversationEditor.CONVERSATION_WIDTH;
-                let extendHeight = $(this).position().top + ConversationEditor.CONVERSATION_HEIGHT;
+                let extendWidth = $(this).position().left + $(this).width() + ConversationEditor.CANVAS_LEFT_TOP_SPACE;
+                let extendHeight = $(this).position().top + $(this).height() + ConversationEditor.CANVAS_LEFT_TOP_SPACE;
                 if (extendWidth > canvasWidth) {
-                    self.$canvas.width(Math.max(canvasWidth, extendWidth));
+                    self.$canvas.width(extendWidth);
                 }
                 if (extendHeight > canvasHeight) {
-                    self.$canvas.height(Math.max(canvasWidth, extendHeight));
+                    self.$canvas.height(extendHeight);
                 }
                 self.$svgContainer.css('z-index', ConversationEditor.LAYER_DEFAULT);
-                $(this).css('z-index', ConversationEditor.LAYER_CONVERSATION);
+                $(this).css('z-index', ConversationEditor.LAYER_DEFAULT);
+                $('.lineGroup').removeClass('highlight');
             })
             .on('start', function () {
                 dragging = true;
@@ -1216,7 +1231,7 @@ export class ConversationEditor {
                     // don't allow zooming without pressing [ctrl] key
                     return d3.event.ctrlKey;
                 }
-                return true;
+                return d3.event.type === 'dblclick';
             })
             .on("zoom", this.canvasZoomed));
     }
@@ -1227,9 +1242,9 @@ export class ConversationEditor {
     private buildMapList() {
         this.iterationMaxDepth = 0;
         this.conversations = new Map<string, Conversation>();
-        this.drawConversations = new Set<string>();
-        this.negativeConversations = new Set<Conversation>();
         this.responses = new Map<string, Response>();
+        this.drawConversations = new Set<string>();
+        this.negativeConversations = new Set<string>();
         this.conversationStack = new Map<number, number>();
         this.responseStack = new Map<number, number>();
         this.connectorLines = new Map<string, RelationshipLine>();
@@ -1237,6 +1252,7 @@ export class ConversationEditor {
 
         this.sanitizeConfigurationData();
         this.recursiveDrawConversations(this.rootConversation);
+        this.drawNegativeConversations();
         this.adjustCanvasSize();
     }
 
@@ -1263,18 +1279,30 @@ export class ConversationEditor {
     }
 
     /**
+     * If any conversation isn't drew but it has relationships to another,
+     * we'll need to draw these conversations without lines
+     */
+    private drawNegativeConversations() {
+        if (this.drawConversations.size === this.conversations.size) {
+            return;
+        }
+
+        this.conversations.forEach((conversation: Conversation) => {
+            let conversationID = conversation.getUuid();
+            if (!this.drawConversations.has(conversationID)) {
+                this.drawSingleConversation(conversation);
+            }
+        });
+    }
+
+    /**
      * Automatically adjust canvas size with the content change
      * e.g it can be used for drag to extend canvas size
      */
     private adjustCanvasSize() {
-        const conversationStacks = Math.max(...Array.from(this.conversationStack.values()));
-        const responseStacks = Math.max(...Array.from(this.responseStack.values()));
-
         const totalDepth = this.conversationStack.size;
         // x: (depth + 1) * conversation width * spaces
         let maxX = (totalDepth + 1) * (ConversationEditor.CONVERSATION_WIDTH + ConversationEditor.CONVERSATION_SPACE_X);
-
-
         // y: calculate each level's conversation & response stacks to get maximum height, level height : Map<level, height>
         let levelHeight = new Map<number, number>();
 
@@ -1318,7 +1346,7 @@ export class ConversationEditor {
         // The radius
         let conversationTemplate = nunjucks.renderString(this.conversationRenderString, conversation.toJSON());
         $(conversationTemplate).css(position)
-            .toggleClass('conversation_start', conversation.getDepth() === 0)
+            .toggleClass('conversation_start', conversation === this.rootConversation)
             .appendTo(this.$canvas);
     }
 
@@ -1334,7 +1362,7 @@ export class ConversationEditor {
         // The stack of conversations width: x - depth
         let depth = conversation.getDepth();
         if (depth < 0) {
-            this.negativeConversations.add(conversation);
+            this.negativeConversations.add(conversation.getUuid());
             const addPointsBtnPosition = $('.add-conversation-point-btn').offset();
             // 40, 50 - adjust position to the corner
             return {
@@ -1357,6 +1385,54 @@ export class ConversationEditor {
         position.left = ConversationEditor.CANVAS_LEFT_TOP_SPACE + depth * (ConversationEditor.CONVERSATION_WIDTH + ConversationEditor.CONVERSATION_SPACE_X);
         position.top = isNewLevel ? ConversationEditor.CANVAS_LEFT_TOP_SPACE : currentConversationStack * (ConversationEditor.CONVERSATION_HEIGHT + ConversationEditor.CONVERSATION_SPACE_Y) + currentResponseStack * ConversationEditor.RESPONSE_HEIGHT;
         return position;
+    }
+
+    /**
+     * get related connector lines by conversation or response id
+     * @param id: ConversationID | ResponseID
+     */
+    private decorateRelatedLinesByConversationID(id: string) {
+        let relatedLinesArr = this.getRelatedConnectorLineGroups(id);
+        relatedLinesArr.forEach((relationShip: RelationshipLine) => {
+            $(`#${relationShip.getId()}`).addClass('highlight');
+        });
+    }
+
+    /**
+     * get related connector lines by conversation ID
+     * @param conversationID: string
+     */
+    private getRelatedConnectorLineGroups(conversationID: string): Array<RelationshipLine> {
+        let conversation = this.getConversationById(conversationID);
+        let relatedLinesArr = [];
+
+        // foreigner children
+        conversation.getResponses().forEach((response: Response) => {
+            relatedLinesArr = relatedLinesArr.concat(this.getRelatedConnectorLinesByResponseID(response.getUuid()));
+        });
+
+        // foreigner parents
+        relatedLinesArr = relatedLinesArr.concat(this.getRelatedConnectorLinesByConversationID(conversationID));
+
+        return relatedLinesArr;
+    }
+
+    /**
+     * get related connector lines by response ID
+     * @param responseID: string
+     */
+    private getRelatedConnectorLinesByResponseID(responseID: string): Array<RelationshipLine> {
+        let linesArr = Array.from(this.connectorLines.values());
+        return linesArr.filter(relationship => relationship.getId().includes(responseID));
+    }
+
+    /**
+     * get related connector lines by conversation ID
+     * @param conversationID: string
+     */
+    private getRelatedConnectorLinesByConversationID(conversationID: string): Array<RelationshipLine> {
+        let linesArr = Array.from(this.connectorLines.values());
+        return linesArr.filter(relationship => relationship.getId().includes(conversationID));
     }
 
     /**
@@ -1637,6 +1713,11 @@ export class ConversationEditor {
         return `hsl(${Math.floor(360 * Math.random())},${88}%,${50}%)`;
     }
 
+    public static preventDefault(event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
     /**
      * *************************************************************** /
      * [OLD DATA STRUCTURE] The block to handle old config data
@@ -1664,8 +1745,8 @@ export class ConversationEditor {
             question['answers'].forEach((answer) => {
                 let response = new Response(conversation, answer['text']);
                 conversation.addResponse(response);
-                this.responses.set(response.getUuid(), response);
                 answer['id'] = response.getUuid();
+                this.responses.set(response.getUuid(), response);
             });
             this.conversations.set(conversation.getUuid(), conversation);
         });
@@ -1692,9 +1773,17 @@ export class ConversationEditor {
                 });
 
                 subQuestions.forEach((relatedQuestion) => {
+                    // if itself, continue
+                    if (relatedQuestion === questionObj) {
+                        return true;
+                    }
                     let conversationID = relatedQuestion['id'];
                     let responseID = answer['id'];
-                    this.addSvgConnectorLinesData(conversationID, responseID);
+                    let conversation = this.conversations.get(conversationID);
+                    let response = this.responses.get(responseID);
+                    if (!this.recursiveCheckConversationLooper(conversation, response)) {
+                        this.addSvgConnectorLinesData(conversation, response);
+                    }
                 });
             });
         });
@@ -2094,12 +2183,12 @@ export class RelationshipLine {
     private _points: number;
     private readonly _color: string;
 
-    constructor(id: string, before: Conversation, after: Response, weight?: number, points?: number) {
-        this._id = id;
+    constructor(before: Conversation, after: Response, id?: string, weight?: number, points?: number) {
         this._weight = weight || 0;
         this._points = points || 0;
         this._before = before;
         this._after = after;
+        this._id = id ? id : `comb_${before.getUuid()}_${after.getUuid()}`;
         this._color = ConversationEditor.generateRandomColor();
     }
 

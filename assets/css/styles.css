@@ -53,7 +53,6 @@
       margin-right: 15px; }
   #scenario_draw_modal .guide-bar {
     display: none;
-    z-index: 1;
     position: fixed;
     bottom: 55px;
     width: 100%;
@@ -132,11 +131,17 @@
       fill: none; }
       #scenario_draw_modal .svg_container path.symbol {
         fill: rgba(0, 0, 0, 0.75); }
+    #scenario_draw_modal .svg_container g.lineGroup.active path.line {
+      stroke-dasharray: 3; }
     #scenario_draw_modal .svg_container g.lineGroup.active circle {
       fill: #f98c06 !important; }
     #scenario_draw_modal .svg_container g.lineGroup.active path {
       stroke: #f98c06;
       stroke-width: 2.2; }
+    #scenario_draw_modal .svg_container g.lineGroup.highlight path.line {
+      stroke: white; }
+    #scenario_draw_modal .svg_container g.lineGroup.highlight path.symbol {
+      fill: white; }
     #scenario_draw_modal .svg_container g.lineGroup:hover .line {
       stroke-width: 2.8; }
     #scenario_draw_modal .svg_container g.lineGroup:hover .symbol {
@@ -154,13 +159,15 @@
     #scenario_draw_modal #scenario_drawer_container .canvas-container .canvas {
       position: absolute;
       left: 0;
-      top: 0; }
+      top: 0;
+      -webkit-transform: translate(0, 0) scale(1);
+      -ms-transform: translate(0, 0) scale(1);
+      transform: translate(0, 0) scale(1); }
     #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates {
       width: 100%;
       max-width: 300px;
       position: absolute;
       display: inline-block;
-      z-index: 1;
       margin-left: 50px;
       margin-top: 50px; }
       #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates:hover .trash-conversation-btn .fa-trash {
@@ -172,7 +179,7 @@
     #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates.conversation_start {
       position: absolute; }
     #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates.editing {
-      z-index: 10; }
+      z-index: inherit; }
     #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates.conversation_start .connector.before {
       display: none; }
     #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates.conversation_start .start-text-wrap {
@@ -226,7 +233,7 @@
         right: -30px;
         top: 50%; }
       #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .connector.before {
-        left: 8px;
+        left: 0;
         top: 6px;
         z-index: 1; }
       #scenario_draw_modal #scenario_drawer_container .canvas-container .conversation_templates .connector.single {
@@ -300,6 +307,7 @@
     #scenario_draw_modal #scenario_drawer_container .canvas-container .form-group {
       margin-bottom: 15px; }
     #scenario_draw_modal #scenario_drawer_container .canvas-container .img-wrapper {
+      z-index: -1;
       width: 80px;
       height: 80px;
       min-width: 80px;
@@ -321,6 +329,14 @@
       background: #3a465f;
       -webkit-box-shadow: 0 2px 12px 2px rgba(0, 0, 0, 0.1);
       box-shadow: 0 2px 12px 2px rgba(0, 0, 0, 0.1); }
+    #scenario_draw_modal #scenario_drawer_container .canvas-container .img-click-handler--js {
+      cursor: pointer;
+      width: 80px;
+      height: 50px;
+      position: absolute;
+      left: -50px;
+      top: -50px;
+      background: transparent; }
     #scenario_draw_modal #scenario_drawer_container .canvas-container .img-wrapper img {
       -o-object-fit: cover;
       object-fit: cover;
@@ -440,19 +456,21 @@
         color: rgba(0, 0, 0, 0.65);
         font-size: 14px;
         font-weight: 400; }
-      #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window .btn-wrap .btn {
-        width: 100%;
-        padding: 8px 35px;
-        -webkit-box-shadow: 0 2px 12px 2px rgba(0, 0, 0, 0.1);
-        box-shadow: 0 2px 12px 2px rgba(0, 0, 0, 0.1); }
-        #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window .btn-wrap .btn:hover {
-          -webkit-box-shadow: 0 3px 30px 1px rgba(0, 0, 0, 0.2);
-          box-shadow: 0 3px 30px 1px rgba(0, 0, 0, 0.2); }
-      #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window .btn-wrap .btn-delete-connector {
-        margin-top: 15px;
-        background: rgba(185, 153, 93, 0.8); }
-        #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window .btn-wrap .btn-delete-connector:hover {
-          background: #b9995d; }
+      #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window .btn-wrap {
+        min-width: 289px; }
+        #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window .btn-wrap .btn {
+          width: 100%;
+          padding: 8px 35px;
+          -webkit-box-shadow: 0 2px 12px 2px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 2px 12px 2px rgba(0, 0, 0, 0.1); }
+          #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window .btn-wrap .btn:hover {
+            -webkit-box-shadow: 0 3px 30px 1px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 3px 30px 1px rgba(0, 0, 0, 0.2); }
+        #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window .btn-wrap .btn-delete-connector {
+          margin-top: 15px;
+          background: rgba(185, 153, 93, 0.8); }
+          #scenario_draw_modal #scenario_drawer_container .canvas-container .relationship_config_window .btn-wrap .btn-delete-connector:hover {
+            background: #b9995d; }
     #scenario_draw_modal #scenario_drawer_container .canvas-container textarea {
       font: 14px "Helvetica Neue";
       font-weight: normal;
